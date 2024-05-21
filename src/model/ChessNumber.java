@@ -4,33 +4,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-public class GridNumber {
+public class ChessNumber {
     private final int X_COUNT;
     private final int Y_COUNT;
 
     private int[][] numbers;
 
     static Random random = new Random();
-
-    public GridNumber(int xCount, int yCount) {
-        this.X_COUNT = xCount;
-        this.Y_COUNT = yCount;
-        this.numbers = new int[this.X_COUNT][this.Y_COUNT];//数组大小
+    public ChessNumber(int x_COUNT, int y_COUNT)
+    {
+        this.X_COUNT = x_COUNT;
+        this.Y_COUNT = y_COUNT;
+        numbers=new int[x_COUNT][y_COUNT];
         this.initialNumbers();
     }
-
     public void initialNumbers() {
-        for (int i = 0; i < numbers.length; i++) {
-            for (int j = 0; j < numbers[i].length; j++) {
-                //todo: update generate numbers method
-                int rand=random.nextInt(2);  //设计概率，1/2 有数字，1/6为4，1/3为2
-                if(rand==0){
-                    rand=random.nextInt(3);
-                    if(rand==2)numbers[i][j]=4;
-                    else numbers[i][j]=2;
-                }
-                else numbers[i][j]=0;
-            }
+        int x1,x2,y1,y2;
+        x1=random.nextInt(X_COUNT);x2=random.nextInt(X_COUNT);
+        y1=random.nextInt(Y_COUNT);y2=random.nextInt(Y_COUNT);
+        while(x1==x2)x1=random.nextInt(X_COUNT);
+        numbers[x1][y1]=2;numbers[x2][y2]=4;
+        System.out.println("Game begin");
+        for(int i=0;i<numbers.length;i++)
+        {
+            for(int j=0;j<numbers[0].length;j++)System.out.printf(" %d",numbers[i][j]);
+            System.out.println();
         }
     }
     //todo: finish the method of four direction moving.
@@ -207,6 +205,7 @@ public class GridNumber {
     public int getNumber(int i, int j) {
         return numbers[i][j];
     }
+    public int[][] getNumber(){return numbers;}
 
     public void printNumber() {
         for (int[] line : numbers) {
