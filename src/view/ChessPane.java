@@ -37,12 +37,12 @@ public class ChessPane {
                 else color = getColorForValue(value);
                 if(value==0) cell =new Label();
                 else cell = new Label(String.valueOf(value));
-                cell.setFont(new Font("Arial",/*FontWeight.BOLD, FontPosture.REGULAR,*/30));
+                cell.setFont(Font.font("Arial",FontWeight.BLACK, FontPosture.REGULAR,35));
                 // 根据值的大小设置颜色
                 //Color.web("#CDC0B4");
                 cell.setBackground(new Background(new BackgroundFill(color, null, null)));
 
-                cell.setPrefSize(100, 100);
+                cell.setPrefSize(110, 110);
                 cell.setAlignment(Pos.CENTER);
 
                 GridPane.setRowIndex(cell, i);
@@ -59,14 +59,14 @@ public class ChessPane {
         else if(value==16)return Color.web("#ED9361");
         else if(value==32)return Color.web("#F27853");
         else if(value==64)return Color.web("#F15B38");
-        else if (value == 128)return Color.web("##E8CA72");
+        else if (value == 128)return Color.web("#E8CA72");
         else if(value==256)return Color.web("#E6CC6F");
         else if (value == 512)return Color.web("#E7C95B");
         else if(value==1024)return Color.web("#E8C023");
         else if (value == 2048) {
-            return Color.web("#E8C023"); //金色
+            return Color.web("#E8C023"); //
         } else {
-            return Color.rgb(15,15,15); // 红色（表示非常高的值）
+            return Color.rgb(15,15,15); // 待修改
         }
     }
     public GridPane getGridPane(){return gridPane;}
