@@ -17,8 +17,8 @@ import static javafx.stage.Modality.APPLICATION_MODAL;
 public class GameScene {
     private int steps;
     private int scores;
-    private int x_Count;
-    private int y_Count;
+    private final int x_Count;
+    private final int y_Count;
     private ChessNumber chessNumber;
     private ChessPane chessPane;
     private Scene scene;
@@ -27,7 +27,19 @@ public class GameScene {
 
     private Label labelStep=new Label("Step: 0");
     private Label labelscores=new Label("Scores: 0");
-    public GameScene(int X_COUNT,int Y_COUNT,String usersName){
+
+    // 创建方向按键
+    private Button upButton = new Button("↑");
+    private Button downButton = new Button("↓");
+    private Button leftButton = new Button("←");
+    private Button rightButton = new Button("→");
+
+    // 创建功能按钮
+    private Button loadButton = new Button("Load");
+    private Button saveButton = new Button("Save");
+    private Button restartButton = new Button("Restart");
+    private Button menuButton = new Button("Exit");
+    public GameScene(int X_COUNT,int Y_COUNT,String usersName,int pattern,String mode,int choice){
         x_Count=X_COUNT;y_Count=Y_COUNT;
         this.userName=usersName;
 
@@ -40,24 +52,12 @@ public class GameScene {
         labelscores.setLayoutX(600);
         labelscores.setLayoutY(120);
 
-        // 创建方向按键
-        Button upButton = new Button("↑");
-        Button downButton = new Button("↓");
-        Button leftButton = new Button("←");
-        Button rightButton = new Button("→");
-
         // 将方向按键放入BorderPane中
         BorderPane directionButtons= new BorderPane();
         directionButtons.setBottom(downButton);
         directionButtons.setTop(upButton);
         directionButtons.setLeft(leftButton);
         directionButtons.setRight(rightButton);
-
-        // 创建功能按钮
-        Button loadButton = new Button("Load");
-        Button saveButton = new Button("Save");
-        Button restartButton = new Button("Restart");
-        Button menuButton = new Button("Menu");
 
 //        loadButton.getStyleClass().add("my-button");//  尝试使用Css对按钮改良
 
@@ -113,20 +113,19 @@ public class GameScene {
         });
 
         restartButton.setOnAction(event -> {
-            restartGame(steps,chessNumber.getNumber());
-            steps=0;
-            chessNumber.clearNumbers();
-            chessNumber.initialNumbers();
-            this.updateGridsNumber();
+            restartGame(steps,chessNumber);
+            System.out.println("Do RestartGame here!");
         });
 
         saveButton.setOnAction(event ->{
+            System.out.println("Do SaveGame here!");
             chessNumber.saveNumber(steps);
             this.updateGridsNumber();
         });
 
         loadButton.setOnAction(event ->{
-            chessNumber.loadNumber();
+            LoadGame();
+            System.out.println("Do LoadGame here!");
         });
 
         //键盘操作
@@ -162,6 +161,23 @@ public class GameScene {
         labelStep.setText("Step: "+Integer.toString(steps));
         labelscores.setText("Scores: "+Integer.toString(chessNumber.getScores()));
         chessPane.ChessPanePaint(chessNumber.getNumber());
+        if(chessNumber.checkGameOver()){
+            GameOver gameover=new GameOver(chessNumber.getScores());
+            Scene overScene=gameover.getScene();
+            Stage overStage=new Stage();
+
+            gameover.getRestartButn().setOnAction(event ->{
+                restartGame();
+                overStage.close();
+            });
+            gameover.getExitButn().setOnAction(event ->{
+                overStage.close();
+            });
+
+            overStage.setTitle("Game Over");
+            overStage.setScene(overScene);
+            overStage.show();
+        }
     }
 
     public Scene getScene(){return scene;}
@@ -198,7 +214,14 @@ public class GameScene {
             System.out.println();
         }
     }
-    public void restartGame(int step,int[][] num){
+    public void restartGame()
+    {
+        steps=0;
+        chessNumber.clearNumbers();
+        chessNumber.initialNumbers();
+        this.updateGridsNumber();
+    }
+    public void restartGame(int step,ChessNumber chessNum){
         int scores=chessNumber.getScores();
         Label settleLabel= new Label("本局游戏得分为："+ Integer.toString(scores));
         Label levelLabel= new Label();
@@ -246,18 +269,57 @@ public class GameScene {
         Stage stageGameSettle= new Stage();
 
         saveAndRestart.setOnAction(event ->{
-            chessNumber.saveNumber(step,num);
+            chessNumber.saveNumber(step,chessNum.getNumber());
+            restartGame();
             stageGameSettle.close();
         });
         settlePane.setOnMouseClicked(event->{
+            restartGame();
             stageGameSettle.close();
         });
         restartButton.setOnAction(event->{
+            restartGame();
             stageGameSettle.close();
         });
         stageGameSettle.setTitle("Restart Game");
         stageGameSettle.setScene(settleScene);
         stageGameSettle.initModality(APPLICATION_MODAL);
         stageGameSettle.show();
+    }
+    public void LoadGame()
+    {
+        //加入一个提醒界面
+        Label hintlabel=new Label("你确定要加载存档吗（可能会丢失当前游戏进度）");
+        Button YesButn=new Button("Yes");
+        Button NoButn=new Button("No");
+        hintlabel.setLayoutX(25);
+        hintlabel.setLayoutY(100);
+        YesButn.setLayoutX(70);
+        YesButn.setLayoutY(190);
+        NoButn.setLayoutX(150);
+        NoButn.setLayoutY(190);
+
+        Pane loadPane=new Pane();
+        loadPane.getChildren().addAll(hintlabel,YesButn,NoButn);
+        Scene loadScene=new Scene(loadPane,300,300);
+        Stage loadStage=new Stage();
+
+        YesButn.setOnAction(Newevent->{
+            int Step=steps;
+            steps=chessNumber.loadNumber();
+            this.updateGridsNumber();
+            loadStage.close();
+            if(steps==-1){
+                //需加入继续或者重开的选项
+            }
+        });
+        NoButn.setOnAction(Newevent->{
+            loadStage.close();
+        });
+
+        loadStage.setTitle("正在玩命加载");
+        loadStage.setScene(loadScene);
+        loadStage.initModality(APPLICATION_MODAL);
+        loadStage.show();
     }
 }

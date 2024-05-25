@@ -7,11 +7,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import static javafx.stage.Modality.APPLICATION_MODAL;
@@ -263,10 +262,13 @@ public class ChessNumber {
         saveNumber(step,numbers);
     }
     public void saveNumber(int step,int[][] num){
-        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\save.csv"; // 替换为你的文件夹路径
+        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\save.csv";
         Label label=new Label();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            //先保存步数和分数
             writer.write(String.valueOf(step));
+            writer.write(",");
+            writer.write(String.valueOf(scores));
             writer.newLine();
             // 遍历二维数组
             for (int[] row : num) {
@@ -310,7 +312,94 @@ public class ChessNumber {
         AlertStage.initModality(APPLICATION_MODAL);
         AlertStage.show();
     }
-    public void loadNumber(){
+    public int loadNumber(){//还需要加入
 
+        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\save.csv";
+        Label label=new Label();
+        int steps;
+
+        List<List<Integer>> list = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+
+            String line;
+            line=reader.readLine();
+            String[] values = line.split(",");
+            steps = Integer.parseInt(values[0]);
+            int nxtscores=Integer.parseInt(values[1]);
+
+            while ((line = reader.readLine()) != null) {
+                // 按逗号分割每行的内容
+                values = line.split(",");
+                List<Integer> row = new ArrayList<>();
+                for (String value : values) {
+                    // 将字符串转换为整数并添加到当前行列表中
+                    row.add(Integer.parseInt(value.trim()));
+                }
+                // 将当前行列表添加到二维列表中
+                list.add(row);
+            }
+            // 如果你需要将二维列表转换为二维数组（可选）
+            int[][] array = new int[list.size()][];
+            for (int i = 0; i < list.size(); i++) {
+                array[i] = list.get(i).stream().mapToInt(Integer::intValue).toArray();
+            }
+
+            //在这里还需要检测array和scores，step是否合理
+            //check(array);
+
+            scores=nxtscores;
+            numbers=array;
+            // 打印二维数组（可选）
+            for (int[] rowArray : array) {
+                for (int value : rowArray) {
+                    System.out.print(value + " ");
+                }
+                System.out.println();
+            }
+            label.setText("已成功读取文件");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("读取文件时出错：" + e.getMessage());
+            label.setText("读取文件时出错");
+            steps=-1;
+        }
+
+        Button YesButn=new Button("确认");
+        label.setLayoutX(100);
+        label.setLayoutY(100);
+        YesButn.setLayoutX(120);
+        YesButn.setLayoutY(190);
+
+        Pane root=new Pane();
+        root.getChildren().addAll(label,YesButn);
+        Scene AlertScene=new Scene(root,300,300);
+        Stage AlertStage=new Stage();
+
+        root.setOnMouseClicked(event->{
+            AlertStage.close();
+        });
+        YesButn.setOnAction(event->{
+            AlertStage.close();
+        });
+
+        AlertStage.setTitle("正在玩命加载");
+        AlertStage.setScene(AlertScene);
+        AlertStage.initModality(APPLICATION_MODAL);
+        AlertStage.show();
+        return steps;
+    }
+    public boolean checkGameOver()
+    {
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<X_COUNT;j++)
+            {
+                if(numbers[i][j]==0)return false;
+                if(i>0&&numbers[i][j]==numbers[i-1][j])return false;
+                if(j>0&&numbers[i][j]==numbers[i][j-1])return false;
+            }
+        }
+        return true;
     }
 }

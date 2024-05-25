@@ -15,7 +15,7 @@ public class Main extends Application {
 
         MainScene mainScene=new MainScene();
         LoginScene loginScene=new LoginScene();
-        GameScene gameScene=new GameScene(4,4,"Admi");
+        GameScene gameScene=new GameScene(4,4,"Admi",0,"classic",512);
         primaryStage.setTitle("Chess");
         primaryStage.setScene(gameScene.getScene());
     //    primaryStage.setResizable(false);
