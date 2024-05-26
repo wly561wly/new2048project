@@ -1,6 +1,7 @@
 package view;
 
-import controller.GameController;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -8,9 +9,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import model.ChessNumber;
 
-import java.util.Objects;
+import java.time.Instant;
 
 import static javafx.stage.Modality.APPLICATION_MODAL;
 
@@ -22,8 +24,14 @@ public class GameScene {
     private ChessNumber chessNumber;
     private ChessPane chessPane;
     private Scene scene;
-
+    private int pattern;
+    private String mode;
+    private int choice;
     private String userName;
+    private boolean autosave;
+    private Label BestLabel;
+    private Instant startTime;
+    private Label timeLabel;
 
     private Label labelStep=new Label("Step: 0");
     private Label labelscores=new Label("Scores: 0");
@@ -38,14 +46,21 @@ public class GameScene {
     private Button loadButton = new Button("Load");
     private Button saveButton = new Button("Save");
     private Button restartButton = new Button("Restart");
-    private Button menuButton = new Button("Exit");
-    public GameScene(int X_COUNT,int Y_COUNT,String usersName,int pattern,String mode,int choice){
+
+    private Button exitButton = new Button("Exit");
+    public GameScene(int X_COUNT,int Y_COUNT,String usersName,int pattern,String mode,int choice,boolean AutoSave){
+
         x_Count=X_COUNT;y_Count=Y_COUNT;
+
         this.userName=usersName;
+        this.pattern=pattern;
+        this.mode=mode;
+        this.choice=choice;
+        this.autosave=AutoSave;
 
-        chessNumber=new ChessNumber(X_COUNT,Y_COUNT,userName);
+        chessNumber=new ChessNumber(X_COUNT,Y_COUNT,userName,mode,choice);
 
-        chessPane=new ChessPane(X_COUNT,Y_COUNT,chessNumber.getNumber(),500);
+        chessPane=new ChessPane(X_COUNT,Y_COUNT,chessNumber.getNumber(),500,pattern);
 
         labelStep.setLayoutX(600);
         labelStep.setLayoutY(50);
@@ -62,8 +77,33 @@ public class GameScene {
 //        loadButton.getStyleClass().add("my-button");//  尝试使用Css对按钮改良
 
         // 将功能按钮放入VBox中
-        VBox functionButtons = new VBox(10, loadButton, saveButton, restartButton, menuButton);
+        VBox functionButtons = new VBox(10, loadButton, saveButton, restartButton, exitButton);
         functionButtons.setAlignment(Pos.TOP_RIGHT); // 顶部右对齐
+
+        //时间轴
+        timeLabel = new Label("00:00:00");
+        timeLabel.setLayoutX(580);
+        timeLabel.setLayoutY(25);
+        // 初始化时间轴
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            // 更新显示的时间
+            java.time.Duration elapsed = java.time.Duration.between(startTime, Instant.now());
+            long hours = elapsed.toHours();
+            long minutes = elapsed.toMinutesPart();
+            long seconds = elapsed.toSecondsPart();
+            timeLabel.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+
+            if(AutoSave==true){
+                if(seconds==0||seconds==30)chessNumber.saveNumber(steps,0);
+            }
+            // autoSave();
+        }));
+        // 设置时间轴无限循环
+        timeline.setCycleCount(Timeline.INDEFINITE);
+
+        // 开始时间轴之前记录开始时间
+        startTime = Instant.now();
+        timeline.play();
 
         // 整体位置布局
         Pane root = new Pane();
@@ -89,7 +129,7 @@ public class GameScene {
         downButton.setFocusTraversable(false);
         loadButton.setFocusTraversable(false);
         restartButton.setFocusTraversable(false);
-        menuButton.setFocusTraversable(false);
+        exitButton.setFocusTraversable(false);
         saveButton.setFocusTraversable(false);
 
         upButton.setOnAction(event -> {
@@ -119,7 +159,7 @@ public class GameScene {
 
         saveButton.setOnAction(event ->{
             System.out.println("Do SaveGame here!");
-            chessNumber.saveNumber(steps);
+            chessNumber.saveNumber(steps,1);
             this.updateGridsNumber();
         });
 
@@ -161,23 +201,27 @@ public class GameScene {
         labelStep.setText("Step: "+Integer.toString(steps));
         labelscores.setText("Scores: "+Integer.toString(chessNumber.getScores()));
         chessPane.ChessPanePaint(chessNumber.getNumber());
-        if(chessNumber.checkGameOver()){
-            GameOver gameover=new GameOver(chessNumber.getScores());
-            Scene overScene=gameover.getScene();
-            Stage overStage=new Stage();
+        if(chessNumber.checkGameOver(pattern,mode,choice)){
 
-            gameover.getRestartButn().setOnAction(event ->{
-                restartGame();
-                overStage.close();
-            });
-            gameover.getExitButn().setOnAction(event ->{
-                overStage.close();
-            });
-
-            overStage.setTitle("Game Over");
-            overStage.setScene(overScene);
-            overStage.show();
+            doGameOver();
         }
+    }
+    public void doGameOver(){
+        GameOver gameover=new GameOver(chessNumber.getScores());
+        Scene overScene=gameover.getScene();
+        Stage overStage=new Stage();
+
+        gameover.getRestartButn().setOnAction(event ->{
+            restartGame();
+            overStage.close();
+        });
+        gameover.getExitButn().setOnAction(event ->{
+            overStage.close();
+        });
+
+        overStage.setTitle("Game Over");
+        overStage.setScene(overScene);
+        overStage.show();
     }
 
     public Scene getScene(){return scene;}
@@ -205,6 +249,13 @@ public class GameScene {
         System.out.println("Right button clicked");
         //Paint();
     }
+    public Button getExitButton() {
+        return exitButton;
+    }
+    public ChessNumber getChessNumber() {
+        return chessNumber;
+    }
+    public int getSteps(){return steps;}
     public void Paint()
     {
         for(int i=0;i<x_Count;i++)
@@ -233,23 +284,32 @@ public class GameScene {
         hintLabel.setLayoutX(111);
         hintLabel.setLayoutY(130);
 
-        if(scores>=5000){
+        if(scores>=35000){
             levelLabel.setText("你的评分为 SSS");
         }
-        else if(scores>=2548){
+        else if(scores>=21048){
             levelLabel.setText("你的评分为 SS");
         }
-        else if(scores>=1050){
+        else if(scores>=12020){
             levelLabel.setText("你的评分为 S");
         }
-        else if(scores>=512){
+        else if(scores>=7250){
+            levelLabel.setText("你的评分为 S-");
+        }
+        else if(scores>=5500){
             levelLabel.setText("你的评分为 A+");
         }
-        else if(scores>=256){
+        else if(scores>=3550){
             levelLabel.setText("你的评分为 A");
         }
-        else if(scores>=100){
+        else if(scores>=1850){
+            levelLabel.setText("你的评分为 B+");
+        }
+        else if(scores>=1050){
             levelLabel.setText("你的评分为 B");
+        }
+        else if(scores>=550){
+            levelLabel.setText("你的评分为 C");
         }
         else {
             levelLabel.setText("废物没有评分");
@@ -269,7 +329,7 @@ public class GameScene {
         Stage stageGameSettle= new Stage();
 
         saveAndRestart.setOnAction(event ->{
-            chessNumber.saveNumber(step,chessNum.getNumber());
+            chessNumber.saveNumber(step,1);
             restartGame();
             stageGameSettle.close();
         });

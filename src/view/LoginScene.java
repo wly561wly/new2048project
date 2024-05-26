@@ -3,85 +3,159 @@ package view;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
-public class LoginScene {
-    /*
-    private Label label= new Label("登录");
-    private Label label1= new Label("账号");
-    private Label label2= new Label("密码");
-    private Label Label3= new Label("忘记密码");
-    private Label label4=new Label("注册");
-    */
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Optional;
+
+public class LoginScene{
     private Label titleLabel = new Label("登录");
     private Label accountLabel = new Label("账号");
     private Label passwordLabel = new Label("密码");
-    private Button forgetPasswordButn = new Button("忘记密码");
-    private Button registerButn = new Button("注册");
+    private Button forgetPasswordBtn = new Button("忘记密码？");
+    private Button registerBtn = new Button("注册");
     Button loginButton = new Button("登录");
+    Button visitorBtn = new Button("游客");
     private TextField account = new TextField();
     private PasswordField password = new PasswordField();
-    private Scene scene;
+    // 使用VBox来垂直排列主要的组件
+    VBox mainVBox = new VBox(10); // 垂直间距为10
+    // 用于标题的HBox
+    HBox titleHBox = new HBox(10); // 水平间距为10
+    // 用于账号和密码的VBox
+    VBox inputVBox = new VBox(30); // 竖直间距为30
+    // 用于“忘记密码”和“注册”的HBox
+    HBox otherHBox = new HBox(20); // 水平间距为20
+    // 假设这里有一个StackPane或其他容器来承载VBox
+    StackPane root = new StackPane();
+    private double height;
+    private double width;
+    private Scene scene=new Scene(root,900,550);;
     public LoginScene()
     {
         titleLabel.setFont(new Font(20));
         accountLabel.setFont(new Font(16));
         passwordLabel.setFont(new Font(16));
-        forgetPasswordButn.setFont(new Font(14));
-        registerButn.setFont(new Font(14));
-        loginButton.setOnAction(e -> {
-            // 在这里处理登录逻辑，比如验证账号和密码
-            // 假设验证通过，保存账户数据（这里只是模拟）
-           // saveAccountData(accountTextField.getText(), passwordTextField.getText());
-        });
-        forgetPasswordButn.setOnAction(e -> {
-            // 忘记密码
-            // saveAccountData(accountTextField.getText(), passwordTextField.getText());
-        });
-        registerButn.setOnAction(e -> {
-            // 注册账号
-            // saveAccountData(accountTextField.getText(), passwordTextField.getText());
-        });
-
-        // 使用VBox来垂直排列主要的组件
-        VBox mainVBox = new VBox(10); // 垂直间距为10
+        forgetPasswordBtn.setFont(new Font(14));
+        loginButton.setFont(new Font(14));
+        registerBtn.setFont(new Font(14));
+        visitorBtn.setFont(new Font(14));
         mainVBox.setAlignment(Pos.TOP_CENTER); // 内容顶部居中对齐
         mainVBox.setPadding(new Insets(20, 20, 20, 20)); // 设置内边距
-
-        // 用于标题的HBox
-        HBox titleHBox = new HBox(10); // 水平间距为10
         titleHBox.setAlignment(Pos.CENTER); // 内容居中对齐
         titleHBox.getChildren().add(titleLabel);
-
-        // 用于账号和密码的VBox
-        VBox inputHBox = new VBox(30); // 竖直间距为30
-        inputHBox.setAlignment(Pos.CENTER_LEFT); // 内容左对齐
-        inputHBox.getChildren().addAll(accountLabel, account,passwordLabel,password); // 这里只是放置Label，实际还需要添加输入框
-
-        // 用于“忘记密码”和“注册”的HBox
-        HBox otherHBox = new HBox(20); // 水平间距为20
+        inputVBox.setAlignment(Pos.CENTER_LEFT); // 内容左对齐
+        inputVBox.getChildren().addAll(accountLabel, account,passwordLabel,password); // 这里只是放置Label，实际还需要添加输入框
         otherHBox.setAlignment(Pos.CENTER_RIGHT); // 内容右对齐
-        otherHBox.getChildren().addAll(forgetPasswordButn, registerButn);
-
+        otherHBox.getChildren().addAll(forgetPasswordBtn, registerBtn);
         // 将HBox添加到VBox中
-        mainVBox.getChildren().addAll(titleHBox, inputHBox, otherHBox,loginButton);
-
-        // 假设这里有一个StackPane或其他容器来承载VBox
-        StackPane root = new StackPane();
+        mainVBox.getChildren().addAll(titleHBox, inputVBox, otherHBox,loginButton,visitorBtn);
         root.getChildren().add(mainVBox);
-
-        scene=new Scene(root,300,400);
     }
+    public boolean authenticate(TextField account, PasswordField password) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\86189\\IdeaProjects\\javafx\\UserInfo.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(":");
+                if (parts.length == 2 && parts[0].equals(account) && parts[1].equals(password)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public boolean getAuthenticate(){
+        return authenticate(account, password);
+    }
+
+    //getter and setter
     public Scene getScene(){return this.scene;}
-    public void saveAccountData()
-    {
-
+    public Label getTitleLabel() {
+        return titleLabel;
     }
+
+    public void setTitleLabel(Label titleLabel) {
+        this.titleLabel = titleLabel;
+    }
+
+    public Label getAccountLabel() {
+        return accountLabel;
+    }
+
+    public void setAccountLabel(Label accountLabel) {
+        this.accountLabel = accountLabel;
+    }
+
+    public Label getPasswordLabel() {
+        return passwordLabel;
+    }
+
+    public void setPasswordLabel(Label passwordLabel) {
+        this.passwordLabel = passwordLabel;
+    }
+
+    public Button getForgetPasswordBtn() {
+        return forgetPasswordBtn;
+    }
+
+    public void setForgetPasswordBtn(Button forgetPasswordButn) {
+        this.forgetPasswordBtn = forgetPasswordButn;
+    }
+
+    public Button getRegisterBtn() {
+        return registerBtn;
+    }
+
+    public void setRegisterBtn(Button registerButn) {
+        this.registerBtn = registerButn;
+    }
+
+    public Button getLoginButton() {
+        return loginButton;
+    }
+
+    public void setLoginButton(Button loginButton) {
+        this.loginButton = loginButton;
+    }
+
+    public TextField getAccount() {
+        return account;
+    }
+
+    public void setAccount(TextField account) {
+        this.account = account;
+    }
+
+    public PasswordField getPassword() {
+        return password;
+    }
+
+    public void setPassword(PasswordField password) {
+        this.password = password;
+    }
+
+    public Button getVisitorBtn() {
+        return visitorBtn;
+    }
+
+    public void setVisitorBtn(Button visitorBtn) {
+        this.visitorBtn = visitorBtn;
+    }
+
+    public void setScene(Scene scene) {
+        this.scene = scene;
+    }
+
+
+
+
+
 }

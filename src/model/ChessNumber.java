@@ -4,7 +4,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -20,15 +19,19 @@ public class ChessNumber {
     private final int Y_COUNT;
     private String userName;
     private int scores;
+    private String Mode;
+    private int choice;
 
     private int[][] numbers;
 
     static Random random = new Random();
-    public ChessNumber(int x_COUNT, int y_COUNT,String UserName)
+    public ChessNumber(int x_COUNT, int y_COUNT,String UserName,String mode,int choice)
     {
         this.X_COUNT = x_COUNT;
         this.Y_COUNT = y_COUNT;
         this.userName=UserName;
+        this.Mode=mode;
+        this.choice=choice;
         scores=0;
         numbers=new int[x_COUNT][y_COUNT];
         this.initialNumbers();
@@ -258,11 +261,10 @@ public class ChessNumber {
     }
     public int getScores(){return scores;}
 
-    public void saveNumber(int step){
-        saveNumber(step,numbers);
-    }
-    public void saveNumber(int step,int[][] num){
-        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\save.csv";
+    public void saveNumber(int step,int type){saveNumber(step,type,numbers);}
+
+    public void saveNumber(int step,int type,int[][] num){
+        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\"+String.valueOf(choice)+"\\save.csv";
         Label label=new Label();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             //先保存步数和分数
@@ -285,9 +287,11 @@ public class ChessNumber {
             label.setText("已成功保存到文件：" + userName+"\\save.csv");
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("保存数组到文件时出错：" + e.getMessage());
+            System.out.println("保存数组到文件时出错");
             label.setText("保存文件时出错：" + e.getMessage());
         }
+
+        if(type==0)return;//自动保存没有弹窗
 
         Button YesButn=new Button("确认");
         label.setLayoutX(40);
@@ -314,7 +318,7 @@ public class ChessNumber {
     }
     public int loadNumber(){//还需要加入
 
-        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\save.csv";
+        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\"+String.valueOf(choice)+"\\save.csv";
         Label label=new Label();
         int steps;
 
@@ -389,8 +393,23 @@ public class ChessNumber {
         AlertStage.show();
         return steps;
     }
-    public boolean checkGameOver()
+    public boolean checkGameOver(int pattern, String mode, int choice)
     {
+        if(mode=="classic"){
+            int maxNum=0;
+            for(int i=0;i<X_COUNT;i++)
+            {
+                for(int j=0;j<Y_COUNT;j++)
+                {
+                    if(numbers[i][j]>maxNum)maxNum=numbers[i][j];
+                }
+            }
+            if(maxNum==choice)return true;
+        }
+        else if(mode=="challenge"){
+            //增加时间管理
+
+        }
         for(int i=0;i<X_COUNT;i++)
         {
             for(int j=0;j<X_COUNT;j++)

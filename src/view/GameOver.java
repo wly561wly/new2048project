@@ -20,23 +20,32 @@ public class GameOver {
         levelLabel.setLayoutX(110);
         levelLabel.setLayoutY(100);
 
-        if(scores>=5000){
+        if(scores>=35000){
             levelLabel.setText("你的评分为 SSS");
         }
-        else if(scores>=2548){
+        else if(scores>=21048){
             levelLabel.setText("你的评分为 SS");
         }
-        else if(scores>=1050){
+        else if(scores>=12020){
             levelLabel.setText("你的评分为 S");
         }
-        else if(scores>=512){
+        else if(scores>=7250){
+            levelLabel.setText("你的评分为 S-");
+        }
+        else if(scores>=5000){
             levelLabel.setText("你的评分为 A+");
         }
-        else if(scores>=256){
+        else if(scores>=2050){
             levelLabel.setText("你的评分为 A");
         }
-        else if(scores>=100){
+        else if(scores>=1050){
+            levelLabel.setText("你的评分为 B+");
+        }
+        else if(scores>=550){
             levelLabel.setText("你的评分为 B");
+        }
+        else if(scores>=250){
+            levelLabel.setText("你的评分为 C");
         }
         else {
             levelLabel.setText("废物没有评分");
