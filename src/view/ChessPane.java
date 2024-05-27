@@ -11,6 +11,7 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 
 public class ChessPane {
+    private int X_count;
     private int [][] grid;
     private double gridWidth,gridHeight;
     private int[] numTable={1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536};
@@ -18,6 +19,7 @@ public class ChessPane {
     private GridPane gridPane;
     private int pattern;
     public ChessPane(int x_Count,int y_Count,int [][]num, int gridSize,int pattern) {
+        X_count=x_Count;
         gridPane = new GridPane();
         grid = new int[x_Count][y_Count];
         this.pattern=pattern;
@@ -98,4 +100,6 @@ public class ChessPane {
         };
         colorTable=Colortable;
     }
+    public void setPattern(int x){pattern=x;}
+    public int getX_count(){return X_count;}
 }

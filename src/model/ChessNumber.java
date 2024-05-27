@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import jdk.jfr.Unsigned;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,11 +16,14 @@ import java.util.Random;
 import static javafx.stage.Modality.APPLICATION_MODAL;
 
 public class ChessNumber {
-    private final int X_COUNT;
-    private final int Y_COUNT;
+    private int X_COUNT;
+    private int Y_COUNT;
     private String userName;
+
+    private int time=0;
     private int scores;
     private String Mode;
+
     private int choice;
 
     private int[][] numbers;
@@ -37,7 +41,7 @@ public class ChessNumber {
         this.initialNumbers();
     }
     public void clearNumbers(){
-        scores=0;
+        scores=0;time=0;
         for(int i=0;i<X_COUNT;i++)
             for(int j=0;j<Y_COUNT;j++)
                 numbers[i][j]=0;
@@ -233,6 +237,9 @@ public class ChessNumber {
     public int getNumber(int i, int j) {
         return numbers[i][j];
     }
+    public int getTime() {
+        return time;
+    }
     public int[][] getNumber(){return numbers;}
 
     public void printNumber() {
@@ -261,16 +268,22 @@ public class ChessNumber {
     }
     public int getScores(){return scores;}
 
-    public void saveNumber(int step,int type){saveNumber(step,type,numbers);}
+    public void saveNumber(int step,int type,int time){saveNumber(step,type,numbers,time);}
 
-    public void saveNumber(int step,int type,int[][] num){
-        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\"+String.valueOf(choice)+"\\save.csv";
+    public void saveNumber(int step,int type,int[][] num,int time){
+        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\save.csv";
         Label label=new Label();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            //先保存步数和分数
+            //先保存步数,分数,时间,x_count,
             writer.write(String.valueOf(step));
             writer.write(",");
             writer.write(String.valueOf(scores));
+            writer.write(",");
+            writer.write(String.valueOf(time));
+            writer.write(",");
+            writer.write(String.valueOf(X_COUNT));
+            writer.write(",");
+            writer.write(String.valueOf(choice));
             writer.newLine();
             // 遍历二维数组
             for (int[] row : num) {
@@ -283,6 +296,10 @@ public class ChessNumber {
                 }
                 writer.newLine(); // 换行，以便下一行从新的行开始
             }
+            //增加一个密钥
+            writer.write(String.valueOf(getKeyword(step,num,time)));
+            writer.newLine();
+
             System.out.println("数组已成功保存到文件：" + filePath);
             label.setText("已成功保存到文件：" + userName+"\\save.csv");
         } catch (IOException e) {
@@ -318,7 +335,7 @@ public class ChessNumber {
     }
     public int loadNumber(){//还需要加入
 
-        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\"+String.valueOf(choice)+"\\save.csv";
+        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\save.csv";
         Label label=new Label();
         int steps;
 
@@ -330,8 +347,10 @@ public class ChessNumber {
             String[] values = line.split(",");
             steps = Integer.parseInt(values[0]);
             int nxtscores=Integer.parseInt(values[1]);
-
-            while ((line = reader.readLine()) != null) {
+            time=Integer.parseInt(values[2]);
+            int Count=Integer.parseInt(values[3]);
+            choice=Integer.parseInt(values[4]);
+            while ((line = reader.readLine()) != null && list.size()<Count) {
                 // 按逗号分割每行的内容
                 values = line.split(",");
                 List<Integer> row = new ArrayList<>();
@@ -342,6 +361,9 @@ public class ChessNumber {
                 // 将当前行列表添加到二维列表中
                 list.add(row);
             }
+            long Key=Integer.parseInt(line);
+            //System.out.println("Key:"+String.valueOf(Key));没问题
+
             // 如果你需要将二维列表转换为二维数组（可选）
             int[][] array = new int[list.size()][];
             for (int i = 0; i < list.size(); i++) {
@@ -349,10 +371,21 @@ public class ChessNumber {
             }
 
             //在这里还需要检测array和scores，step是否合理
-            //check(array);
+            if(!checkArray(array,Count)||(steps<0)||scores<0||scores%2>0){
+                System.out.println("文件错误");
+                //尝试还原文件
+                doReserve();
+            }
+            //Hash密钥验证
+            if(!checkKeyword(steps,nxtscores,time,Count,array,choice,Key)){
+                System.out.println("文件错误");
+                doReserve();
+            }
 
             scores=nxtscores;
             numbers=array;
+            X_COUNT=Count;
+            Y_COUNT=Count;
             // 打印二维数组（可选）
             for (int[] rowArray : array) {
                 for (int value : rowArray) {
@@ -393,9 +426,9 @@ public class ChessNumber {
         AlertStage.show();
         return steps;
     }
-    public boolean checkGameOver(int pattern, String mode, int choice)
+    public boolean checkGameOver(int pattern, String mode, int choice,int time)
     {
-        if(mode=="classic"){
+        if(mode.equals("classic")){
             int maxNum=0;
             for(int i=0;i<X_COUNT;i++)
             {
@@ -406,7 +439,7 @@ public class ChessNumber {
             }
             if(maxNum==choice)return true;
         }
-        else if(mode=="challenge"){
+        else if(mode.equals("challenge")){
             //增加时间管理
 
         }
@@ -422,4 +455,64 @@ public class ChessNumber {
         return true;
     }
     public void setUserName(String s) {userName=s;}
+    public int getX_COUNT() {
+        return X_COUNT;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getMode() {
+        return Mode;
+    }
+
+    public int getChoice() {
+        return choice;
+    }
+
+    public int[][] getNumbers() {
+        return numbers;
+    }
+    public boolean checkArray(int[][] array,int len)
+    {
+        int x=array.length;
+        if(x!=len)return false;
+        for(int i=0;i<x;i++)
+        {
+            if(x!=array[i].length)return false;
+            for(int j=0;j<x;j++)
+            {
+                if(array[i][j]<0||array[i][j]%2>0)return false;
+            }
+        }
+        return true;
+    }
+    public long getKeyword(int steps,int [][]num,int time)
+    {
+        long Key=0,p=1000000093,t=100043;
+        Key=((steps*t+scores)%p*t+time)%p;
+        Key=((Key*t+X_COUNT)%p*t+choice)%p;
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++){Key=(Key*t+num[i][j])%p;}
+        }
+        return Key;
+    }
+    public boolean checkKeyword(int step,int score,int time,int Count,int[][]num,int choice,long trueKey) {
+        long Key = 0, p = 1000000093, t = 100043;
+        Key = ((step * t + score) % p * t + time) % p;
+        Key = ((Key * t + Count) % p * t + choice) % p;
+        for (int i = 0; i < Count; i++) {
+            for (int j = 0; j < Count; j++) {
+                Key = (Key * t + num[i][j]) % p;
+            }
+        }
+        if (Key == trueKey) return true;
+        return false;
+    }
+    public void doReserve()
+    {
+
+    }
 }

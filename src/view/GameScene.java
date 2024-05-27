@@ -8,6 +8,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.ChessNumber;
@@ -17,21 +20,23 @@ import java.time.Instant;
 import static javafx.stage.Modality.APPLICATION_MODAL;
 
 public class GameScene {
+    private int time;
     private int steps;
     private int scores;
     private int x_Count;
     private int y_Count;
+    private MenuBar menubar = new MenuBar();
     private ChessNumber chessNumber;
     private ChessPane chessPane;
     private Scene scene;
     private int pattern;
     private String mode;
     private int choice;
+    private int running;//表示游戏是否在运行
     private String userName;
     private boolean autosave;
-    private Label BestLabel;
     private Instant startTime;
-    private Label timeLabel;
+    private Label timeLabel=new Label("时间：00:00");//时间轴
 
     private Label labelStep=new Label("Step: 0");
     private Label labelscores=new Label("Scores: 0");
@@ -49,7 +54,7 @@ public class GameScene {
 
     private Button exitButton = new Button("Exit");
     public GameScene(int X_COUNT,int Y_COUNT,String usersName,int pattern,String mode,int choice,boolean AutoSave){
-
+        time=0;
         x_Count=X_COUNT;y_Count=Y_COUNT;
 
         this.userName=usersName;
@@ -57,15 +62,24 @@ public class GameScene {
         this.mode=mode;
         this.choice=choice;
         this.autosave=AutoSave;
+        running=1;
 
         chessNumber=new ChessNumber(X_COUNT,Y_COUNT,userName,mode,choice);
 
         chessPane=new ChessPane(X_COUNT,Y_COUNT,chessNumber.getNumber(),500,pattern);
 
+        //布局
         labelStep.setLayoutX(600);
-        labelStep.setLayoutY(50);
+        labelStep.setLayoutY(90);
         labelscores.setLayoutX(600);
-        labelscores.setLayoutY(120);
+        labelscores.setLayoutY(140);
+        labelStep.setFont(new Font(24));
+        labelscores.setFont(new Font(24));
+
+        timeLabel.setFont(new Font(24)); // 设置字体大小
+
+        timeLabel.setLayoutX(580);
+        timeLabel.setLayoutY(25);
 
         // 将方向按键放入BorderPane中
         BorderPane directionButtons= new BorderPane();
@@ -80,23 +94,30 @@ public class GameScene {
         VBox functionButtons = new VBox(10, loadButton, saveButton, restartButton, exitButton);
         functionButtons.setAlignment(Pos.TOP_RIGHT); // 顶部右对齐
 
-        //时间轴
-        timeLabel = new Label("00:00:00");
-        timeLabel.setLayoutX(580);
-        timeLabel.setLayoutY(25);
+        //menuBar
+        VBox menuBox =new VBox();
+        menuBox.getChildren().add(menubar.getMenuBar());
+
         // 初始化时间轴
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             // 更新显示的时间
             java.time.Duration elapsed = java.time.Duration.between(startTime, Instant.now());
-            long hours = elapsed.toHours();
-            long minutes = elapsed.toMinutesPart();
-            long seconds = elapsed.toSecondsPart();
-            timeLabel.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+            if(running>0)time++;
+            long minutes =time/60;
+            long seconds =time%60;
+            timeLabel.setText(String.format("时间：%02d:%02d", minutes, seconds));
 
-            if(AutoSave==true){
-                if(seconds==0||seconds==30)chessNumber.saveNumber(steps,0);
+            //增加红色提醒
+            if(mode.equals("challenge")){
+                if(choice-time<=10){
+                    timeLabel.setTextFill(Color.RED);
+                }
+                if(choice==time)doGameOver();
             }
             // autoSave();
+            if(AutoSave==true){
+                if(seconds==15||seconds==45)chessNumber.saveNumber(steps,0,time);
+            }
         }));
         // 设置时间轴无限循环
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -114,7 +135,7 @@ public class GameScene {
         directionButtons.setLayoutY(200);
         functionButtons.setLayoutX(650);
         functionButtons.setLayoutY(300);
-        root.getChildren().addAll(ChesPane,directionButtons,functionButtons,labelStep,labelscores);
+        root.getChildren().addAll(timeLabel,menuBox,ChesPane,directionButtons,functionButtons,labelStep,labelscores);
 
 //        String cssUrl = Objects.requireNonNull(this.getClass().getResource("MyStyle.css")).toExternalForm(); // 假设CSS文件位于项目的根资源文件夹中
 //        root.getStylesheets().add(cssUrl); // 将CSS添加到根节点
@@ -159,7 +180,7 @@ public class GameScene {
 
         saveButton.setOnAction(event ->{
             System.out.println("Do SaveGame here!");
-            chessNumber.saveNumber(steps,1);
+            chessNumber.saveNumber(steps,1,time);
             this.updateGridsNumber();
         });
 
@@ -195,18 +216,19 @@ public class GameScene {
                     break;
             }
         });
+
     }
 
     public void updateGridsNumber() {
         labelStep.setText("Step: "+Integer.toString(steps));
         labelscores.setText("Scores: "+Integer.toString(chessNumber.getScores()));
         chessPane.ChessPanePaint(chessNumber.getNumber());
-        if(chessNumber.checkGameOver(pattern,mode,choice)){
-
+        if(chessNumber.checkGameOver(pattern,mode,choice,time)){
             doGameOver();
         }
     }
     public void doGameOver(){
+        running=0;
         GameOver gameover=new GameOver(chessNumber.getScores());
         Scene overScene=gameover.getScene();
         Stage overStage=new Stage();
@@ -256,6 +278,7 @@ public class GameScene {
         return chessNumber;
     }
     public int getSteps(){return steps;}
+    public int getTime(){return time;}
     public void Paint()
     {
         for(int i=0;i<x_Count;i++)
@@ -268,6 +291,7 @@ public class GameScene {
     public void restartGame()
     {
         steps=0;
+        running=1;
         chessNumber.clearNumbers();
         chessNumber.initialNumbers();
         this.updateGridsNumber();
@@ -329,7 +353,7 @@ public class GameScene {
         Stage stageGameSettle= new Stage();
 
         saveAndRestart.setOnAction(event ->{
-            chessNumber.saveNumber(step,1);
+            chessNumber.saveNumber(step,1,time);
             restartGame();
             stageGameSettle.close();
         });
@@ -367,6 +391,11 @@ public class GameScene {
         YesButn.setOnAction(Newevent->{
             int Step=steps;
             steps=chessNumber.loadNumber();
+            choice=chessNumber.getChoice();
+            time=chessNumber.getTime();
+            if(x_Count!=chessNumber.getX_COUNT()){
+
+            }
             this.updateGridsNumber();
             loadStage.close();
             if(steps==-1){
@@ -388,4 +417,21 @@ public class GameScene {
         userName=s;
         chessNumber.setUserName(s);
     }
+    public String getMode(){return mode;}
+    public void setAutosave(boolean x){
+        autosave=x;
+    }
+    public void setPattern(int x){
+        pattern=x;
+        if(chessPane!=null)chessPane.setPattern(x);
+    }
+    public void setX_Count(int x)
+    {
+        if(x_Count==x)return;
+        x_Count=x;
+        y_Count=x_Count;
+        if(chessPane.getX_count()!=x)chessPane=new ChessPane(x_Count,y_Count,chessNumber.getNumber(),500,pattern);
+        if(chessNumber.getX_COUNT()!=x)chessNumber=new ChessNumber(x,y_Count,userName,mode,choice);
+    }
+    public int getX_Count(){return x_Count;}
 }
