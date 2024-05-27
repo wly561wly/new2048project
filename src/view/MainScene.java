@@ -22,8 +22,8 @@ import java.io.IOException;
 public class MainScene {
     private Label label= new Label("欢迎来到2048妙妙屋");
     private Button btn_mode1= new Button("经典模式");
-    private Button btn_mode2= new Button("自定义模式");
-    private Button btn_mode3= new Button("挑战模式");
+    private Button btn_mode2= new Button("挑战模式");
+    private Button btn_mode3= new Button("积分模式");
 
     private Button btn_help= new Button("帮助");
     private Button btn_setting=new Button("设置");

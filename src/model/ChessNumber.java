@@ -421,4 +421,5 @@ public class ChessNumber {
         }
         return true;
     }
+    public void setUserName(String s) {userName=s;}
 }

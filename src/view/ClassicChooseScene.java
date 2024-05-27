@@ -13,7 +13,8 @@ public class ClassicChooseScene {
     private Button btn_mode2= new Button("1024");
     private Button btn_mode3= new Button("2048");
     private Button btn_mode4= new Button("4096");
-    private GameScene gameScene;
+
+    private Button exitButton = new Button("Exit");
     private Scene choiceScene;
     public ClassicChooseScene(){
         titlelabel.setLayoutX(250);
@@ -28,12 +29,13 @@ public class ClassicChooseScene {
         btn_mode3.setLayoutY(350);
         btn_mode4.setLayoutX(400);
         btn_mode4.setLayoutY(400);
+        exitButton.setLayoutX(400);
+        exitButton.setLayoutY(450);
         Pane pane=new Pane();
-        pane.getChildren().addAll(btn_mode1,btn_mode2,btn_mode3,btn_mode4,titlelabel);
+        pane.getChildren().addAll(btn_mode1,btn_mode2,btn_mode3,btn_mode4,titlelabel,exitButton);
         choiceScene=new Scene(pane,900,550);
     }
     public Scene getChoiceScene(){return choiceScene;}
-    public GameScene get_GameScene(){return gameScene;}
     public Button getBtn_mode1() {
         return btn_mode1;
     }
@@ -45,5 +47,8 @@ public class ClassicChooseScene {
     }
     public Button getBtn_mode4() {
         return btn_mode4;
+    }
+    public Button getExitButton() {
+        return exitButton;
     }
 }

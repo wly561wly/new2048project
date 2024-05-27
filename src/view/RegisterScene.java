@@ -21,6 +21,8 @@ public class RegisterScene {
     VBox forgetRoot = new VBox(30); // 竖直间距为30
     Scene scene = new Scene(mainVBox,900,550);
     public RegisterScene(){
+        mainVBox.setMaxWidth(400);
+        forgetRoot.setMaxWidth(400);
         mainVBox.setAlignment(Pos.TOP_CENTER); // 内容顶部居中对齐
         mainVBox.setPadding(new Insets(20,20,20,20)); // 设置内边距
         forgetRoot.setAlignment(Pos.CENTER_LEFT); // 内容左对齐
@@ -125,5 +127,19 @@ public class RegisterScene {
 
     public void setRegisterScene(Scene registerScene) {
         this.scene = scene;
+    }
+    public boolean check_password()
+    {
+        String passTest=password.getText();
+        System.out.println("Check Password:");
+        int flag1=0,flag2=0;
+        if(passTest.length()<8||passTest.length()>20)return false;
+        for(int i=0;i<passTest.length();i++)
+        {
+            if(Character.isDigit(passTest.charAt(i)))flag1++;
+            else if(Character.isLetter(passTest.charAt(i)))flag2++;
+        }
+        if(flag1==0||flag2==0)return false;
+        return true;
     }
 }

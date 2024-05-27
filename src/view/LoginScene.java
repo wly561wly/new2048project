@@ -36,7 +36,7 @@ public class LoginScene{
     StackPane root = new StackPane();
     private double height;
     private double width;
-    private Scene scene=new Scene(root,900,550);;
+    private Scene scene;
     public LoginScene()
     {
         titleLabel.setFont(new Font(20));
@@ -46,19 +46,26 @@ public class LoginScene{
         loginButton.setFont(new Font(14));
         registerBtn.setFont(new Font(14));
         visitorBtn.setFont(new Font(14));
+
+        account.setMaxWidth(400);
+        password.setMaxWidth(400);
+        mainVBox.setMaxWidth(500);
+        otherHBox.setMaxWidth(400);
+
         mainVBox.setAlignment(Pos.TOP_CENTER); // 内容顶部居中对齐
-        mainVBox.setPadding(new Insets(20, 20, 20, 20)); // 设置内边距
+        mainVBox.setPadding(new Insets(20, 20, 30, 30)); // 设置内边距
         titleHBox.setAlignment(Pos.CENTER); // 内容居中对齐
         titleHBox.getChildren().add(titleLabel);
         inputVBox.setAlignment(Pos.CENTER_LEFT); // 内容左对齐
-        inputVBox.getChildren().addAll(accountLabel, account,passwordLabel,password); // 这里只是放置Label，实际还需要添加输入框
+        inputVBox.getChildren().addAll(accountLabel, account,passwordLabel,password);
         otherHBox.setAlignment(Pos.CENTER_RIGHT); // 内容右对齐
         otherHBox.getChildren().addAll(forgetPasswordBtn, registerBtn);
         // 将HBox添加到VBox中
         mainVBox.getChildren().addAll(titleHBox, inputVBox, otherHBox,loginButton,visitorBtn);
         root.getChildren().add(mainVBox);
+        scene=new Scene(root,900,550);;
     }
-    public boolean authenticate(TextField account, PasswordField password) {
+    /*public boolean authenticate(TextField account, PasswordField password) {
         try (BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\86189\\IdeaProjects\\javafx\\UserInfo.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -72,35 +79,10 @@ public class LoginScene{
         }
         return false;
     }
-    public boolean getAuthenticate(){
-        return authenticate(account, password);
-    }
-
+    public boolean getAuthenticate(){return authenticate(account, password);}
+*/
     //getter and setter
     public Scene getScene(){return this.scene;}
-    public Label getTitleLabel() {
-        return titleLabel;
-    }
-
-    public void setTitleLabel(Label titleLabel) {
-        this.titleLabel = titleLabel;
-    }
-
-    public Label getAccountLabel() {
-        return accountLabel;
-    }
-
-    public void setAccountLabel(Label accountLabel) {
-        this.accountLabel = accountLabel;
-    }
-
-    public Label getPasswordLabel() {
-        return passwordLabel;
-    }
-
-    public void setPasswordLabel(Label passwordLabel) {
-        this.passwordLabel = passwordLabel;
-    }
 
     public Button getForgetPasswordBtn() {
         return forgetPasswordBtn;
@@ -153,8 +135,6 @@ public class LoginScene{
     public void setScene(Scene scene) {
         this.scene = scene;
     }
-
-
 
 
 

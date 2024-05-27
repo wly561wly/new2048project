@@ -1,5 +1,4 @@
 package view;
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -11,18 +10,19 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 
-import static javafx.scene.layout.StackPane.setAlignment;
-
 public class ChessPane {
-    int [][] grid;
-    int[] numTable={1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536};
-    String[][] colorTable;
+    private int [][] grid;
+    private double gridWidth,gridHeight;
+    private int[] numTable={1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536};
+    private String[][] colorTable;
     private GridPane gridPane;
     private int pattern;
     public ChessPane(int x_Count,int y_Count,int [][]num, int gridSize,int pattern) {
         gridPane = new GridPane();
         grid = new int[x_Count][y_Count];
         this.pattern=pattern;
+        this.gridWidth =500/y_Count-10;
+        this.gridHeight=500/x_Count-10;
         setColorTable();
         gridPane.setHgap(10); // 设置水平间距
         gridPane.setVgap(10); // 设置垂直间距
@@ -47,7 +47,7 @@ public class ChessPane {
                 //Color.web("#CDC0B4");
                 cell.setBackground(new Background(new BackgroundFill(color, null, null)));
 
-                cell.setPrefSize(110, 110);
+                cell.setPrefSize(gridWidth, gridHeight);
                 cell.setAlignment(Pos.CENTER);
 
                 GridPane.setRowIndex(cell, i);

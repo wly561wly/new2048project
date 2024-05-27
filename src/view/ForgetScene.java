@@ -25,24 +25,13 @@ public class ForgetScene {
     Scene scene = new Scene(mainVBox,900,550);
     boolean confirm = false;
     public ForgetScene() {
+        mainVBox.setMaxWidth(400);
+        forgetRoot.setMaxWidth(400);
         mainVBox.setAlignment(Pos.TOP_CENTER); // 内容顶部居中对齐
         mainVBox.setPadding(new Insets(20, 20, 20, 20)); // 设置内边距
         forgetRoot.setAlignment(Pos.CENTER_LEFT); // 内容左对齐
         forgetRoot.getChildren().addAll(accountLabel, account, passwordLabel, password, confirmBtn, backBtn);
         mainVBox.getChildren().add(forgetRoot);
-
-        confirmBtn.setOnAction(event -> {
-            // saveAccountData(accountTextField.getText(), passwordTextField.getText());
-            //todo:设置成功的话需要提示用户
-            confirmBtn.setOnAction(event1 -> {
-                try (FileWriter writer = new FileWriter("UserInfo.txt")) {
-                    writer.write(String.valueOf(account));
-                } catch (IOException event2) {
-                    event2.printStackTrace();
-                }
-            });
-            confirm = true;
-        });
     }
 
     public Scene getScene(){

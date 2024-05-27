@@ -19,8 +19,8 @@ import static javafx.stage.Modality.APPLICATION_MODAL;
 public class GameScene {
     private int steps;
     private int scores;
-    private final int x_Count;
-    private final int y_Count;
+    private int x_Count;
+    private int y_Count;
     private ChessNumber chessNumber;
     private ChessPane chessPane;
     private Scene scene;
@@ -371,6 +371,7 @@ public class GameScene {
             loadStage.close();
             if(steps==-1){
                 //需加入继续或者重开的选项
+                //主要是想尽可能恢复当前存档
             }
         });
         NoButn.setOnAction(Newevent->{
@@ -381,5 +382,10 @@ public class GameScene {
         loadStage.setScene(loadScene);
         loadStage.initModality(APPLICATION_MODAL);
         loadStage.show();
+    }
+    public void setUserName(String s)
+    {
+        userName=s;
+        chessNumber.setUserName(s);
     }
 }
