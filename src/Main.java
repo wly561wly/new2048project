@@ -7,6 +7,8 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.MenuBar;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
@@ -47,10 +49,12 @@ public class Main extends Application {
         prepare(primaryStage);
 
 //这里有些问题，可能是相对路径有问题
-//        Image mainImage = new Image("C:\\Users\\86189\\IdeaProjects\\javafx\\src\\img.png");
-//        ImageView imageView = new ImageView();
-//        mainScene.getRoot().getChildren().add(imageView);
-//        primaryStage.getIcons().add(new Image(String.valueOf(new File("image/img.png"))));
+        //可以使用
+        Image mainImage = new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\2.png");
+        ImageView imageView = new ImageView();
+        mainScene.getRoot().getChildren().add(imageView);
+        primaryStage.getIcons().add(new Image(String.valueOf(new File("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\2.png"))));
+
         primaryStage.setTitle("2048妙妙屋");
         primaryStage.setScene(startScene.getScene());
         startScene.getScene().setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -231,11 +235,13 @@ public class Main extends Application {
             primaryStage.setScene(challengeChooseScene.getChoiceScene());
         });
         mainScene.getBtn_mode3().setOnAction(event ->{
-
+            gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"scores",6,AutoSave);
+            gameScene.getExitButton().setOnAction(actionEvent ->{
+                doExitHintStage(primaryStage);
+            });
+            primaryStage.setScene(gameScene.getScene());
         });
-        mainScene.getBtn_help().setOnAction(event ->{
 
-        });
         //设置的监听器
         mainScene.getBtn_setting().setOnAction(event ->{
             if(gameScene!=null){
@@ -307,7 +313,7 @@ public class Main extends Application {
 
             vbox.getChildren().addAll(vBoxsize,vBoxvolume,vBoxcolor,vBoxsave); // 将RadioButton和CheckBox添加到VBox中
 
-            //对其中的按钮 监听
+            //对设置的按钮 监听
             choiceBox.valueProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     System.out.println("ChoiceBox selected value changed to: " + newValue);
@@ -557,7 +563,9 @@ public class Main extends Application {
         saveBtn.setOnAction(event ->{
             gameScene.getChessNumber().saveNumber(gameScene.getSteps(),1,gameScene.getTime());
             stageGameSettle.close();
-            stage.setScene(classicChooseScene.getChoiceScene());
+            if(gameScene.getMode().equals("classic"))stage.setScene(classicChooseScene.getChoiceScene());
+            else if(gameScene.getMode().equals("challenge"))stage.setScene(challengeChooseScene.getChoiceScene());
+            else if(gameScene.getMode().equals("scores"))stage.setScene(mainScene.getScene());
         });
         exitBtn.setOnAction(event->{
             stageGameSettle.close();

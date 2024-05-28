@@ -14,6 +14,7 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.ChessNumber;
+import model.RankElement;
 
 import java.time.Instant;
 
@@ -36,6 +37,8 @@ public class GameScene {
     private String userName;
     private boolean autosave;
     private Instant startTime;
+    private RankList rankList;
+    private Label titileLabel=new Label();
     private Label timeLabel=new Label("时间：00:00");//时间轴
 
     private Label labelStep=new Label("Step: 0");
@@ -51,7 +54,7 @@ public class GameScene {
     private Button loadButton = new Button("Load");
     private Button saveButton = new Button("Save");
     private Button restartButton = new Button("Restart");
-
+    private Button rankButton = new Button("Rank");
     private Button exitButton = new Button("Exit");
     public GameScene(int X_COUNT,int Y_COUNT,String usersName,int pattern,String mode,int choice,boolean AutoSave){
         time=0;
@@ -64,22 +67,29 @@ public class GameScene {
         this.autosave=AutoSave;
         running=1;
 
+        if(mode.equals("classic"))titileLabel.setText("模式：经典模式 "+String.valueOf(choice)+"场");
+        else if(mode.equals("challenge"))titileLabel.setText("模式：挑战模式 "+String.valueOf(choice)+"s 场");
+        else titileLabel.setText("模式：无尽模式");
+
         chessNumber=new ChessNumber(X_COUNT,Y_COUNT,userName,mode,choice);
 
         chessPane=new ChessPane(X_COUNT,Y_COUNT,chessNumber.getNumber(),500,pattern);
 
         //布局
-        labelStep.setLayoutX(600);
-        labelStep.setLayoutY(90);
-        labelscores.setLayoutX(600);
-        labelscores.setLayoutY(140);
+
+        titileLabel.setLayoutX(580);
+        titileLabel.setLayoutY(40);
+        timeLabel.setLayoutX(580);
+        timeLabel.setLayoutY(90);
+        labelStep.setLayoutX(580);
+        labelStep.setLayoutY(120);
+        labelscores.setLayoutX(580);
+        labelscores.setLayoutY(150);
+
+        titileLabel.setFont(new Font(24));
+        timeLabel.setFont(new Font(24)); // 设置字体大小
         labelStep.setFont(new Font(24));
         labelscores.setFont(new Font(24));
-
-        timeLabel.setFont(new Font(24)); // 设置字体大小
-
-        timeLabel.setLayoutX(580);
-        timeLabel.setLayoutY(25);
 
         // 将方向按键放入BorderPane中
         BorderPane directionButtons= new BorderPane();
@@ -91,7 +101,7 @@ public class GameScene {
 //        loadButton.getStyleClass().add("my-button");//  尝试使用Css对按钮改良
 
         // 将功能按钮放入VBox中
-        VBox functionButtons = new VBox(10, loadButton, saveButton, restartButton, exitButton);
+        VBox functionButtons = new VBox(10, loadButton, saveButton, restartButton, rankButton, exitButton);
         functionButtons.setAlignment(Pos.TOP_RIGHT); // 顶部右对齐
 
         //menuBar
@@ -135,7 +145,7 @@ public class GameScene {
         directionButtons.setLayoutY(200);
         functionButtons.setLayoutX(650);
         functionButtons.setLayoutY(300);
-        root.getChildren().addAll(timeLabel,menuBox,ChesPane,directionButtons,functionButtons,labelStep,labelscores);
+        root.getChildren().addAll(titileLabel,timeLabel,menuBox,ChesPane,directionButtons,functionButtons,labelStep,labelscores);
 
 //        String cssUrl = Objects.requireNonNull(this.getClass().getResource("MyStyle.css")).toExternalForm(); // 假设CSS文件位于项目的根资源文件夹中
 //        root.getStylesheets().add(cssUrl); // 将CSS添加到根节点
@@ -189,6 +199,10 @@ public class GameScene {
             System.out.println("Do LoadGame here!");
         });
 
+        rankButton.setOnAction(event->{
+            ShowRank();
+        });
+
         //键盘操作
         scene.setOnKeyPressed(event -> {
             switch (event.getCode()) {
@@ -228,11 +242,12 @@ public class GameScene {
         }
     }
     public void doGameOver(){
-        running=0;
+        running=0;//停止运行
+        rankList.WriteFile(mode,new RankElement(userName,steps,scores,time));
         GameOver gameover=new GameOver(chessNumber.getScores());
         Scene overScene=gameover.getScene();
         Stage overStage=new Stage();
-
+        overStage.initModality(APPLICATION_MODAL);
         gameover.getRestartButn().setOnAction(event ->{
             restartGame();
             overStage.close();
@@ -391,7 +406,11 @@ public class GameScene {
         YesButn.setOnAction(Newevent->{
             int Step=steps;
             steps=chessNumber.loadNumber();
-            choice=chessNumber.getChoice();
+            if(choice!=chessNumber.getChoice()){
+                choice=chessNumber.getChoice();
+                if(mode.equals("classic"))titileLabel.setText("模式：经典模式 "+String.valueOf(choice)+"场");
+                else if(mode.equals("challenge"))titileLabel.setText("模式：挑战模式 "+String.valueOf(choice)+"s 场");
+            }
             time=chessNumber.getTime();
             if(x_Count!=chessNumber.getX_COUNT()){
 
@@ -434,4 +453,13 @@ public class GameScene {
         if(chessNumber.getX_COUNT()!=x)chessNumber=new ChessNumber(x,y_Count,userName,mode,choice);
     }
     public int getX_Count(){return x_Count;}
+    public void ShowRank()
+    {
+        if(mode.equals("classic"))rankList=new RankList(0,mode);
+        else rankList=new RankList(1,mode);
+        Stage stage=new Stage();
+        stage.setTitle("Rank");
+        stage.setScene(rankList.getScene());
+        stage.show();
+    }
 }

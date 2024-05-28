@@ -439,10 +439,6 @@ public class ChessNumber {
             }
             if(maxNum==choice)return true;
         }
-        else if(mode.equals("challenge")){
-            //增加时间管理
-
-        }
         for(int i=0;i<X_COUNT;i++)
         {
             for(int j=0;j<X_COUNT;j++)
