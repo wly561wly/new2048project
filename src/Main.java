@@ -2,17 +2,13 @@ import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.MenuBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import model.ChessNumber;
 import model.UserImform;
 import view.*;
 
@@ -43,6 +39,8 @@ public class Main extends Application {
     private ChallengeChooseScene challengeChooseScene;
     private GameScene gameScene;
     StartScene startScene = new StartScene();
+    Setting setting = new Setting(0);
+    Help help =new Help();
     @Override
     public void start(Stage primaryStage) throws Exception{
 
@@ -236,193 +234,25 @@ public class Main extends Application {
         });
         mainScene.getBtn_mode3().setOnAction(event ->{
             gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"scores",6,AutoSave);
+            setMenubar(primaryStage);
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(primaryStage);
             });
             primaryStage.setScene(gameScene.getScene());
         });
 
+        mainScene.getBtn_help().setOnAction(event ->{
+
+        });
         //设置的监听器
         mainScene.getBtn_setting().setOnAction(event ->{
-            if(gameScene!=null){
-                if(gameScene.getX_Count()!=X_COUNT)setCount(gameScene.getX_Count());
-            }
-
-            Stage stage = new Stage();
-            Label color = new Label("颜色");
-            Label volume = new Label("音量");
-            Label size = new Label("游戏面板");
-            Label save = new Label("自动保存");
-            ChoiceBox<String> choiceBox = new ChoiceBox<>();
-            ToggleGroup toggleGroup = new ToggleGroup();
-            choiceBox.getItems().addAll("3*3","4*4","5*5","5*5","6*6","7*7","8*8","9*9","10*10");
-            if(X_COUNT==3)choiceBox.getSelectionModel().select("3*3"); //设置默认选项
-            else if(X_COUNT==4)choiceBox.getSelectionModel().select("4*4");
-            else if(X_COUNT==5)choiceBox.getSelectionModel().select("5*5");
-            else if(X_COUNT==6)choiceBox.getSelectionModel().select("6*6");
-            else if(X_COUNT==7)choiceBox.getSelectionModel().select("7*7");
-            else if(X_COUNT==8)choiceBox.getSelectionModel().select("8*8");
-            else if(X_COUNT==9)choiceBox.getSelectionModel().select("9*9");
-            else if(X_COUNT==10)choiceBox.getSelectionModel().select("10*10");
-            Slider volumeSlider = new Slider(0, 100, 50); // 最小值、最大值、初始值
-            RadioButton radioButton1 = new RadioButton("Classic");
-            radioButton1.setToggleGroup(toggleGroup);
-            RadioButton radioButton2 = new RadioButton("Green and Blue");
-            radioButton2.setToggleGroup(toggleGroup);
-            RadioButton radioButton3 = new RadioButton("Pink");
-            radioButton3.setToggleGroup(toggleGroup);
-            RadioButton radioButton4 = new RadioButton("Blue");
-            radioButton4.setToggleGroup(toggleGroup);
-            RadioButton radioButton5 = new RadioButton("Yellow and Red");
-            radioButton5.setToggleGroup(toggleGroup);
-            if(pattern==0) radioButton1.setSelected(true);
-            else if(pattern==1) radioButton2.setSelected(true);
-            else if(pattern==2) radioButton3.setSelected(true);
-            else if(pattern==3) radioButton4.setSelected(true);
-            else if(pattern==4) radioButton5.setSelected(true);
-
-            // 创建自动保存CheckBox
-            CheckBox autoSaveCheckBox = new CheckBox("设置自动保存");
-            if(AutoSave==false)autoSaveCheckBox.setSelected(false);
-            else autoSaveCheckBox.setSelected(true);
-
-            // 布局设置
-            VBox vbox = new VBox(30); // 垂直布局，元素间隔10像素
-            vbox.setPadding(new Insets(10)); // 设置内边距
-            vbox.setAlignment(Pos.CENTER_LEFT); // 设置对齐方式为居中
-            HBox radioBox = new HBox(10); // 水平布局，存放RadioButton
-            radioBox.getChildren().addAll(radioButton1,radioButton2,radioButton3,radioButton4,radioButton5);
-            VBox vBoxcolor =new VBox(20);
-            vBoxcolor.setAlignment(Pos.CENTER_LEFT);
-            vBoxcolor.setPadding(new Insets(20));
-            vBoxcolor.getChildren().addAll(color,radioBox);
-            VBox vBoxvolume = new VBox();
-            vBoxvolume.setAlignment(Pos.CENTER_LEFT);
-            vBoxvolume.setPadding(new Insets(20));
-            vBoxvolume.setPrefWidth(100);
-            vBoxvolume.setMaxWidth(300);
-            vBoxvolume.getChildren().addAll(volume,volumeSlider);
-            VBox vBoxsize =new VBox(20);
-            vBoxsize.setAlignment(Pos.CENTER_LEFT);
-            vBoxsize.setPadding(new Insets(20));
-            vBoxsize.getChildren().setAll(size,choiceBox);
-            VBox vBoxsave =new VBox(20);
-            vBoxsave.setAlignment(Pos.CENTER_LEFT);
-            vBoxsave.setPadding(new Insets(20));
-            vBoxsave.getChildren().addAll(save,autoSaveCheckBox);
-
-            vbox.getChildren().addAll(vBoxsize,vBoxvolume,vBoxcolor,vBoxsave); // 将RadioButton和CheckBox添加到VBox中
-
-            //对设置的按钮 监听
-            choiceBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-                if (newValue != null) {
-                    System.out.println("ChoiceBox selected value changed to: " + newValue);
-                    if(newValue.charAt(0)=='3')setCount(3);
-                    else if(newValue.charAt(0)=='4')setCount(4);
-                    else if(newValue.charAt(0)=='5')setCount(5);
-                    else if(newValue.charAt(0)=='6')setCount(6);
-                    else if(newValue.charAt(0)=='7')setCount(7);
-                    else if(newValue.charAt(0)=='8')setCount(8);
-                    else if(newValue.charAt(0)=='9')setCount(9);
-                    else if(newValue.charAt(0)=='1')setCount(10);
-                }
-            });
-            autoSaveCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                    if (newValue) {
-                        // 如果被选中了
-                        setAuto(true);
-                        System.out.println("自动保存已启用");
-                    } else {
-                        // 如果未被选中
-                        setAuto(false);
-                        System.out.println("自动保存已禁用");
-                    }
-                }
-            });
-            // 监听 ToggleGroup 的 selectedToggle 属性
-            toggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-                if (newValue != null) {
-                    // newValue 是新选中的 RadioButton
-                    RadioButton selectedRadioButton = (RadioButton) newValue;
-                    System.out.println("Selected RadioButton: " + selectedRadioButton.getText());
-                    if(selectedRadioButton.getText().equals("Classic"))setPattern(0);
-                    else if(selectedRadioButton.getText().equals("Green and Blue"))setPattern(1);
-                    else if(selectedRadioButton.getText().equals("Pink"))setPattern(2);
-                    else if(selectedRadioButton.getText().equals("Blue"))setPattern(3);
-                    else if(selectedRadioButton.getText().equals("Yellow and Red"))setPattern(4);
-                } else {
-                    // 如果没有选中任何 RadioButton，则 newValue 是 null
-                    System.out.println("No RadioButton selected");
-                }
-            });
-
-            // 创建场景并设置给Stage
-            Scene scene = new Scene(vbox, 600, 600); // 场景大小为600x600像素
-            stage.setTitle("设置");
-            stage.setScene(scene);
-            stage.show();
+            setting=new Setting(1);
+            dotheSetting();
         })  ;
 
         //帮助界面
         mainScene.getBtn_help().setOnAction(event -> {
-            Label indexlabel = new Label("目录");
-            Button outlook = new Button("游玩");
-            Button classic = new Button("经典模式玩法");
-            Button challenge = new Button("挑战模式玩法");
-            Button key = new Button("按键");
-            Button other =new Button("其他");
-            Font font1 = new Font("Times New Roman",16);
-            Font font2 = new Font("Helvetica",14);
-            indexlabel.setFont(font1);
-            outlook.setFont(font2);
-            classic.setFont(font2);
-            challenge.setFont(font2);
-            key.setFont(font2);
-            other.setFont(font2);
-            VBox index =new VBox();
-            index.setAlignment(Pos.CENTER_LEFT);
-            index.setSpacing(10);
-            index.setPadding(new Insets(10));
-            index.getChildren().addAll(outlook,classic,challenge,key,other);
-            VBox root1 = new VBox();
-            root1.setAlignment(Pos.TOP_LEFT);
-            root1.setPadding(new Insets(15));
-            root1.setSpacing(20);
-            root1.getChildren().addAll(indexlabel,index);
-            AnchorPane root = new AnchorPane();
-            TextArea t1 =new TextArea(
-                "游戏默认在一个4x4的网格上进行，\n\n"+
-                    "游戏开始时，面板上会有两个随机位置的数字方块2和4。\n\n" +
-                    "玩家可以通过带点击网格左边的的“↑”“↓”“←”“→”控件，\n\n"+
-                    "或键盘上的箭头键和“W”“S”“A”“D”键来移动滑块。\n\n"+
-                    "每次移动都会导致所有滑块向一个方向移动，\n\n"+
-                    "直到不能再移动为止。移动的方向有上、下、左、右四个。\n"+
-                    "每次移动后，面板上会随机位置生成一个新的数字方块，\n"+
-                    "这个数字通常是2，偶尔是4。\n"+
-                    "当相同数字的滑块在移动过程中碰撞时，\n"+
-                    "它们会合并成一个滑块，其数字是原来两个数字的和。\n"+
-                    "例如，两个“2”滑块合并成一个“4”滑块。\n" +
-                    "每次合并滑块都会增加玩家的得分。\n" +
-                    "当面板上没有空位，且无法再进行合并时，游戏结束。");
-            t1.setEditable(false); // 文本区域不可编辑
-            t1.setFont(new Font("Times New Roman",15));
-            t1.setPrefSize(400, 500);
-            Slider slider = new Slider(0, 1, 0.5); // 最小值、最大值、初始值。控制文本的滚动
-            slider.setOrientation(Orientation.VERTICAL);
-            HBox hbox1 = new HBox();
-            hbox1.getChildren().addAll(t1,slider);
-            hbox1.setLayoutX(180);
-            hbox1.setLayoutY(30);
-            root.getChildren().addAll(root1,hbox1);
-            Scene scene = new Scene(root,600,600);
-            Stage stage = new Stage();
-            stage.setScene(scene);
-            stage.setTitle("帮助");
-            stage.show();
-            outlook.setOnAction(event1 -> {
-            });
+            help.getStage().show();
         });
 
         //返回键的监听器
@@ -470,6 +300,7 @@ public class Main extends Application {
         //经典模式选择界面监听
         classicChooseScene.getBtn_mode1().setOnAction(event ->{
             gameScene=gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"classic",512,AutoSave);
+            setMenubar(stage);
             stage.setScene(gameScene.getScene());
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(stage);
@@ -477,6 +308,7 @@ public class Main extends Application {
         });
         classicChooseScene.getBtn_mode2().setOnAction(event ->{
             gameScene=gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"classic",1024,AutoSave);
+            setMenubar(stage);
             stage.setScene(gameScene.getScene());
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(stage);
@@ -484,6 +316,7 @@ public class Main extends Application {
         });
         classicChooseScene.getBtn_mode3().setOnAction(event ->{
             gameScene=gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"classic",2048,AutoSave);
+            setMenubar(stage);
             stage.setScene(gameScene.getScene());
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(stage);
@@ -491,6 +324,7 @@ public class Main extends Application {
         });
         classicChooseScene.getBtn_mode4().setOnAction(event ->{
             gameScene=gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"classic",4096,AutoSave);
+            setMenubar(stage);
             stage.setScene(gameScene.getScene());
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(stage);
@@ -499,6 +333,7 @@ public class Main extends Application {
         //挑战模式选择界面监听
         challengeChooseScene.getBtn_mode1().setOnAction(event ->{
             gameScene=gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"challenge",30,AutoSave);
+            setMenubar(stage);
             stage.setScene(gameScene.getScene());
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(stage);
@@ -506,6 +341,7 @@ public class Main extends Application {
         });
         challengeChooseScene.getBtn_mode2().setOnAction(event ->{
             gameScene=gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"challenge",60,AutoSave);
+            setMenubar(stage);
             stage.setScene(gameScene.getScene());
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(stage);
@@ -513,6 +349,7 @@ public class Main extends Application {
         });
         challengeChooseScene.getBtn_mode3().setOnAction(event ->{
             gameScene=gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"challenge",90,AutoSave);
+            setMenubar(stage);
             stage.setScene(gameScene.getScene());
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(stage);
@@ -520,6 +357,7 @@ public class Main extends Application {
         });
         challengeChooseScene.getBtn_mode4().setOnAction(event ->{
             gameScene=gameScene=new GameScene(X_COUNT,Y_COUNT,userName,pattern,"challenge",120,AutoSave);
+            setMenubar(stage);
             stage.setScene(gameScene.getScene());
             gameScene.getExitButton().setOnAction(actionEvent ->{
                 doExitHintStage(stage);
@@ -714,5 +552,91 @@ public class Main extends Application {
         X_COUNT=x;
         Y_COUNT=x;
         if(gameScene!=null)gameScene.setX_Count(x);
+    }
+    public void setMenubar(Stage stage)
+    {
+        //菜单栏
+        if (gameScene!=null) {
+            gameScene.getMenubar().getBack().setOnAction(event -> {
+                doExitHintStage(stage);
+            });
+            gameScene.getMenubar().getSettingItem().setOnAction(event -> {
+                setting=new Setting(0);
+                dotheSetting();
+                setting.getStage().show();
+            });
+            gameScene.getMenubar().getHelpItem().setOnAction(event -> {
+                help.getStage().show();
+            });
+        }
+    }
+    public void dotheSetting(){
+        if(gameScene!=null){
+            if(gameScene.getX_Count()!=gameScene.getX_Count())setCount(gameScene.getX_Count());
+        }
+        setting.getStage().show();
+        if (X_COUNT == 3) setting.getChoiceBox().getSelectionModel().select("3*3"); //设置默认选项
+        else if (X_COUNT == 4) setting.getChoiceBox().getSelectionModel().select("4*4");
+        else if (X_COUNT == 5) setting.getChoiceBox().getSelectionModel().select("5*5");
+        else if (X_COUNT == 6) setting.getChoiceBox().getSelectionModel().select("6*6");
+        else if (X_COUNT == 7) setting.getChoiceBox().getSelectionModel().select("7*7");
+        else if (X_COUNT == 8) setting.getChoiceBox().getSelectionModel().select("8*8");
+        else if (X_COUNT == 9) setting.getChoiceBox().getSelectionModel().select("9*9");
+        else if (X_COUNT == 10) setting.getChoiceBox().getSelectionModel().select("10*10");
+
+        if (pattern == 0) setting.getRadioButton1().setSelected(true);
+        else if (pattern == 1) setting.getRadioButton1().setSelected(true);
+        else if (pattern == 2) setting.getRadioButton1().setSelected(true);
+        else if (pattern == 3) setting.getRadioButton1().setSelected(true);
+        else if (pattern == 4) setting.getRadioButton1().setSelected(true);
+
+        // 自动保存CheckBox
+        if (AutoSave == false) setting.getAutoSaveCheckBox().setSelected(false);
+        else setting.getAutoSaveCheckBox().setSelected(true);
+
+        //对其中的按钮 监听
+        setting.getChoiceBox().valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                System.out.println("ChoiceBox selected value changed to: " + newValue);
+                if (newValue.charAt(0) == '3') setCount(3);
+                else if (newValue.charAt(0) == '4') setCount(4);
+                else if (newValue.charAt(0) == '5') setCount(5);
+                else if (newValue.charAt(0) == '6') setCount(6);
+                else if (newValue.charAt(0) == '7') setCount(7);
+                else if (newValue.charAt(0) == '8') setCount(8);
+                else if (newValue.charAt(0) == '9') setCount(9);
+                else if (newValue.charAt(0) == '1') setCount(10);
+            }
+        });
+        setting.getAutoSaveCheckBox().selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    // 如果被选中了
+                    setAuto(true);
+                    System.out.println("自动保存已启用");
+                } else {
+                    // 如果未被选中
+                    setAuto(false);
+                    System.out.println("自动保存已禁用");
+                }
+            }
+        });
+        // 监听 ToggleGroup 的 selectedToggle 属性
+        setting.getToggleGroup().selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                // newValue 是新选中的 RadioButton
+                RadioButton selectedRadioButton = (RadioButton) newValue;
+                System.out.println("Selected RadioButton: " + selectedRadioButton.getText());
+                if (selectedRadioButton.getText().equals("Classic")) setPattern(0);
+                else if (selectedRadioButton.getText().equals("Green and Blue")) setPattern(1);
+                else if (selectedRadioButton.getText().equals("Pink")) setPattern(2);
+                else if (selectedRadioButton.getText().equals("Blue")) setPattern(3);
+                else if (selectedRadioButton.getText().equals("Yellow and Red")) setPattern(4);
+            } else {
+                // 如果没有选中任何 RadioButton，则 newValue 是 null
+                System.out.println("No RadioButton selected");
+            }
+        });
     }
 }

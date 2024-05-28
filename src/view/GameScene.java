@@ -10,7 +10,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.ChessNumber;
@@ -65,6 +64,7 @@ public class GameScene {
         this.mode=mode;
         this.choice=choice;
         this.autosave=AutoSave;
+        this.rankList=new RankList(mode);
         running=1;
 
         if(mode.equals("classic"))titileLabel.setText("模式：经典模式 "+String.valueOf(choice)+"场");
@@ -105,8 +105,7 @@ public class GameScene {
         functionButtons.setAlignment(Pos.TOP_RIGHT); // 顶部右对齐
 
         //menuBar
-        VBox menuBox =new VBox();
-        menuBox.getChildren().add(menubar.getMenuBar());
+        VBox menuBox =new VBox(10,menubar.getMenuBar());
 
         // 初始化时间轴
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
@@ -117,16 +116,22 @@ public class GameScene {
             long seconds =time%60;
             timeLabel.setText(String.format("时间：%02d:%02d", minutes, seconds));
 
+            // 仅测试Rank
+            //if(time==5&&running==1)doGameOver();
+
             //增加红色提醒
             if(mode.equals("challenge")){
                 if(choice-time<=10){
                     timeLabel.setTextFill(Color.RED);
                 }
-                if(choice==time)doGameOver();
+                if(choice==time&&running==1)doGameOver();
             }
             // autoSave();
             if(AutoSave==true){
-                if(seconds==15||seconds==45)chessNumber.saveNumber(steps,0,time);
+                if(seconds==15||seconds==45){
+                    updateRank();
+                    chessNumber.saveNumber(steps,0,time);
+                }
             }
         }));
         // 设置时间轴无限循环
@@ -162,6 +167,7 @@ public class GameScene {
         restartButton.setFocusTraversable(false);
         exitButton.setFocusTraversable(false);
         saveButton.setFocusTraversable(false);
+        rankButton.setFocusTraversable(false);
 
         upButton.setOnAction(event -> {
             MoveUp();
@@ -187,8 +193,19 @@ public class GameScene {
             restartGame(steps,chessNumber);
             System.out.println("Do RestartGame here!");
         });
+        getMenubar().getRestartItem().setOnAction(event -> {
+            restartGame(steps,chessNumber);
+            System.out.println("Do RestartGame here!");
+        });
 
         saveButton.setOnAction(event ->{
+            updateRank();
+            System.out.println("Do SaveGame here!");
+            chessNumber.saveNumber(steps,1,time);
+            this.updateGridsNumber();
+        });
+        getMenubar().getSave().setOnAction(event ->{
+            updateRank();
             System.out.println("Do SaveGame here!");
             chessNumber.saveNumber(steps,1,time);
             this.updateGridsNumber();
@@ -232,7 +249,7 @@ public class GameScene {
         });
 
     }
-
+    //更新棋盘，检测游戏是否解释
     public void updateGridsNumber() {
         labelStep.setText("Step: "+Integer.toString(steps));
         labelscores.setText("Scores: "+Integer.toString(chessNumber.getScores()));
@@ -241,9 +258,10 @@ public class GameScene {
             doGameOver();
         }
     }
+    //游戏结束的操作
     public void doGameOver(){
         running=0;//停止运行
-        rankList.WriteFile(mode,new RankElement(userName,steps,scores,time));
+        updateRank();
         GameOver gameover=new GameOver(chessNumber.getScores());
         Scene overScene=gameover.getScene();
         Stage overStage=new Stage();
@@ -263,24 +281,28 @@ public class GameScene {
 
     public Scene getScene(){return scene;}
     public void MoveUp(){
+        if(running==0)return;
         if(!chessNumber.moveUp())return;
         steps++;
         System.out.println("Up button clicked");
         //Paint();
     }
     public void MoveDown(){
+        if(running==0)return;
         if(!chessNumber.moveDown())return;
         steps++;
         System.out.println("Down button clicked");
         //Paint();
     }
     public void MoveLeft(){
+        if(running==0)return;
         if(!chessNumber.moveLeft())return;
         steps++;
         System.out.println("Left button clicked");
         //Paint();
     }
     public void MoveRight(){
+        if(running==0)return;
         if(!chessNumber.moveRight())return;
         steps++;
         System.out.println("Right button clicked");
@@ -294,6 +316,11 @@ public class GameScene {
     }
     public int getSteps(){return steps;}
     public int getTime(){return time;}
+    public int getChoice(){return choice;}
+
+    public ChessPane getChessPane() {
+        return chessPane;
+    }
     public void Paint()
     {
         for(int i=0;i<x_Count;i++)
@@ -368,6 +395,7 @@ public class GameScene {
         Stage stageGameSettle= new Stage();
 
         saveAndRestart.setOnAction(event ->{
+            updateRank();
             chessNumber.saveNumber(step,1,time);
             restartGame();
             stageGameSettle.close();
@@ -436,6 +464,8 @@ public class GameScene {
         userName=s;
         chessNumber.setUserName(s);
     }
+    public void setChessPane(ChessPane pane){chessPane=pane;}
+    public void setChessNumber(ChessNumber chessNumber){this.chessNumber=chessNumber;}
     public String getMode(){return mode;}
     public void setAutosave(boolean x){
         autosave=x;
@@ -453,13 +483,18 @@ public class GameScene {
         if(chessNumber.getX_COUNT()!=x)chessNumber=new ChessNumber(x,y_Count,userName,mode,choice);
     }
     public int getX_Count(){return x_Count;}
+    public MenuBar getMenubar() {
+        return menubar;
+    }
     public void ShowRank()
     {
-        if(mode.equals("classic"))rankList=new RankList(0,mode);
-        else rankList=new RankList(1,mode);
+        if(mode.equals("classic"))rankList=new RankList(mode);
+        else rankList=new RankList(mode);
         Stage stage=new Stage();
         stage.setTitle("Rank");
         stage.setScene(rankList.getScene());
         stage.show();
     }
+    public void updateRank()
+    {if(x_Count==4)rankList.WriteFile(mode,new RankElement(userName,steps,chessNumber.getScores(),time));}
 }

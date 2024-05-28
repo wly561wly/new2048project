@@ -26,26 +26,17 @@ import java.util.List;
 
 public class RankList {
     private int num;
-    private int flag;
     private String mode;
     Scene scene;
     List<RankElement> rank;
-    public RankList(int flag,String mode)
+    public RankList(String mode)
     {
-        this.flag=flag;
         this.mode=mode;
         rank=new ArrayList<>();
         ReadFile(mode);
-        if(flag==0)rank.sort(new compSteps());
-        else if(flag==1)rank.sort(new compScores());
+        if(mode.equals("classic"))rank.sort(new compSteps());
+        else if(mode.equals("challenge"))rank.sort(new compScores());
         RankPrint();
-    }
-    public void setFlag(int p)
-    {
-        if(p==flag)return;
-        flag=p;
-        if(flag==0)rank.sort(new compSteps());
-        else if(flag==1)rank.sort(new compScores());
     }
     public void RankPrint()
     {
