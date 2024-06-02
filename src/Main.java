@@ -52,6 +52,10 @@ public class Main extends Application {
         ImageView imageView = new ImageView();
         mainScene.getRoot().getChildren().add(imageView);
         primaryStage.getIcons().add(new Image(String.valueOf(new File("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\2.png"))));
+        BorderPane root = new BorderPane();
+
+        Image image = new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\3.png");
+
 
         primaryStage.setTitle("2048妙妙屋");
         primaryStage.setScene(startScene.getScene());
@@ -264,9 +268,17 @@ public class Main extends Application {
         });
         //选择界面的返回监听
         classicChooseScene.getExitButton().setOnAction(event->{
+            if(gameScene!=null)if(gameScene.getX_Count()!=X_COUNT){
+                X_COUNT=gameScene.getX_Count();
+                Y_COUNT=gameScene.getX_Count();
+            }
             primaryStage.setScene(mainScene.getScene());
         });
         challengeChooseScene.getExitButton().setOnAction(event->{
+            if(gameScene!=null)if(gameScene.getX_Count()!=X_COUNT){
+                X_COUNT=gameScene.getX_Count();
+                Y_COUNT=gameScene.getX_Count();
+            }
             primaryStage.setScene(mainScene.getScene());
         });
 
@@ -374,6 +386,7 @@ public class Main extends Application {
     //退出单局游戏说明
     public void doExitHintStage(Stage stage)
     {
+        gameScene.setRunning(0);
         int scores=gameScene.getChessNumber().getScores();
         Label settleLabel= new Label("本局游戏得分为："+ Integer.toString(scores));
         Label hintLabel = new Label("你确定要退出本局游戏吗");
@@ -399,20 +412,34 @@ public class Main extends Application {
         Stage stageGameSettle= new Stage();
 
         saveBtn.setOnAction(event ->{
-            gameScene.getChessNumber().saveNumber(gameScene.getSteps(),1,gameScene.getTime());
+            if(gameScene.getX_Count()!=X_COUNT){
+                X_COUNT=gameScene.getX_Count();
+                Y_COUNT=gameScene.getX_Count();
+            }
+            if(!userName.equals("Visitor_1231"))gameScene.getChessNumber().saveNumber(gameScene.getSteps(),1,gameScene.getTime());
+            else System.out.println("Visitor can't save!");
             stageGameSettle.close();
             if(gameScene.getMode().equals("classic"))stage.setScene(classicChooseScene.getChoiceScene());
             else if(gameScene.getMode().equals("challenge"))stage.setScene(challengeChooseScene.getChoiceScene());
             else if(gameScene.getMode().equals("scores"))stage.setScene(mainScene.getScene());
         });
         exitBtn.setOnAction(event->{
+            if(gameScene.getX_Count()!=X_COUNT){
+                X_COUNT=gameScene.getX_Count();
+                Y_COUNT=gameScene.getX_Count();
+            }
+            gameScene.setRunning(1);
             stageGameSettle.close();
             if(gameScene.getMode().equals("classic"))stage.setScene(classicChooseScene.getChoiceScene());
             else if(gameScene.getMode().equals("challenge"))stage.setScene(challengeChooseScene.getChoiceScene());
             else if(gameScene.getMode().equals("scores"))stage.setScene(mainScene.getScene());
         });
         cancelBtn.setOnAction(event->{
+            gameScene.setRunning(1);
             stageGameSettle.close();
+        });
+        stageGameSettle.setOnCloseRequest(e -> {
+            gameScene.setRunning(1);
         });
         stageGameSettle.setTitle("Exiting");
         stageGameSettle.setScene(settleScene);
@@ -566,12 +593,18 @@ public class Main extends Application {
                 setting.getStage().show();
             });
             gameScene.getMenubar().getHelpItem().setOnAction(event -> {
+                gameScene.setRunning(0);
                 help.getStage().show();
+                help.getStage().setOnCloseRequest(e -> {
+                    gameScene.setRunning(1);
+                    help.getStage().close();
+                });
             });
         }
     }
     public void dotheSetting(){
         if(gameScene!=null){
+            gameScene.setRunning(0);
             if(gameScene.getX_Count()!=gameScene.getX_Count())setCount(gameScene.getX_Count());
         }
         setting.getStage().show();
@@ -585,16 +618,19 @@ public class Main extends Application {
         else if (X_COUNT == 10) setting.getChoiceBox().getSelectionModel().select("10*10");
 
         if (pattern == 0) setting.getRadioButton1().setSelected(true);
-        else if (pattern == 1) setting.getRadioButton1().setSelected(true);
-        else if (pattern == 2) setting.getRadioButton1().setSelected(true);
-        else if (pattern == 3) setting.getRadioButton1().setSelected(true);
-        else if (pattern == 4) setting.getRadioButton1().setSelected(true);
+        else if (pattern == 1) setting.getRadioButton2().setSelected(true);
+        else if (pattern == 2) setting.getRadioButton3().setSelected(true);
+        else if (pattern == 3) setting.getRadioButton4().setSelected(true);
+        else if (pattern == 4) setting.getRadioButton5().setSelected(true);
 
         // 自动保存CheckBox
         if (AutoSave == false) setting.getAutoSaveCheckBox().setSelected(false);
         else setting.getAutoSaveCheckBox().setSelected(true);
 
         //对其中的按钮 监听
+        setting.getStage().setOnCloseRequest(e -> {
+            if(gameScene!=null)gameScene.setRunning(1);
+        });
         setting.getChoiceBox().valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 System.out.println("ChoiceBox selected value changed to: " + newValue);

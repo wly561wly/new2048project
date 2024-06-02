@@ -3,7 +3,8 @@ package view;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 
 public class ClassicChooseScene {
@@ -16,6 +17,7 @@ public class ClassicChooseScene {
 
     private Button exitButton = new Button("Exit");
     private Scene choiceScene;
+    private Image image = new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\4.jpg");
     public ClassicChooseScene(){
         titlelabel.setLayoutX(250);
         titlelabel.setLayoutY(100);
@@ -32,6 +34,8 @@ public class ClassicChooseScene {
         exitButton.setLayoutX(400);
         exitButton.setLayoutY(450);
         Pane pane=new Pane();
+        Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
+        pane.setBackground(background);
         pane.getChildren().addAll(btn_mode1,btn_mode2,btn_mode3,btn_mode4,titlelabel,exitButton);
         choiceScene=new Scene(pane,900,550);
     }

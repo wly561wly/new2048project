@@ -4,7 +4,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 
 import java.io.*;
 
@@ -19,7 +20,8 @@ public class RegisterScene {
     PasswordField password = new PasswordField();
     TextField email = new TextField();
     VBox forgetRoot = new VBox(30); // 竖直间距为30
-    Scene scene = new Scene(mainVBox,900,550);
+    Scene scene;
+    private Image image = new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\4.jpg");
     public RegisterScene(){
         mainVBox.setMaxWidth(400);
         forgetRoot.setMaxWidth(400);
@@ -27,7 +29,10 @@ public class RegisterScene {
         mainVBox.setPadding(new Insets(20,20,20,20)); // 设置内边距
         forgetRoot.setAlignment(Pos.CENTER_LEFT); // 内容左对齐
         forgetRoot.getChildren().addAll(accountLabel, account,passwordLabel,password,emailLabel,email,confirmBtn,backBtn);
+        Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
+        mainVBox.setBackground(background);
         mainVBox.getChildren().add(forgetRoot);
+        scene = new Scene(mainVBox,900,550);
     }
     //读取
     public boolean authenticate(TextField account, PasswordField password) {

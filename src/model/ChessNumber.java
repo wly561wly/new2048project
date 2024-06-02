@@ -333,11 +333,12 @@ public class ChessNumber {
         AlertStage.initModality(APPLICATION_MODAL);
         AlertStage.show();
     }
-    public int loadNumber(){//还需要加入
+    public int loadNumber(){
+        //还需要加入
 
         String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\save.csv";
         Label label=new Label();
-        int steps;
+        int steps=0;
 
         List<List<Integer>> list = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -350,7 +351,9 @@ public class ChessNumber {
             time=Integer.parseInt(values[2]);
             int Count=Integer.parseInt(values[3]);
             choice=Integer.parseInt(values[4]);
-            while ((line = reader.readLine()) != null && list.size()<Count) {
+            System.out.println("Count:"+Count);
+            for(int i=1;i<=Count;i++){
+                line=reader.readLine();
                 // 按逗号分割每行的内容
                 values = line.split(",");
                 List<Integer> row = new ArrayList<>();
@@ -361,26 +364,29 @@ public class ChessNumber {
                 // 将当前行列表添加到二维列表中
                 list.add(row);
             }
-            long Key=Integer.parseInt(line);
-            //System.out.println("Key:"+String.valueOf(Key));没问题
 
-            // 如果你需要将二维列表转换为二维数组（可选）
+            // 将二维列表转换为二维数组
             int[][] array = new int[list.size()][];
             for (int i = 0; i < list.size(); i++) {
                 array[i] = list.get(i).stream().mapToInt(Integer::intValue).toArray();
             }
 
-            //在这里还需要检测array和scores，step是否合理
+            //在这里简单检测array和scores，step是否合理
             if(!checkArray(array,Count)||(steps<0)||scores<0||scores%2>0){
                 System.out.println("文件错误");
                 //尝试还原文件
                 doReserve();
             }
-            //Hash密钥验证
+
+            putKeyword(steps,scores,time,Count,array,choice);
+            line=reader.readLine();
+            long Key=0;
+ //           if(line!=null)Key=Long.decode(line);
+/*            //Hash密钥验证
             if(!checkKeyword(steps,nxtscores,time,Count,array,choice,Key)){
                 System.out.println("文件错误");
                 doReserve();
-            }
+            }*/
 
             scores=nxtscores;
             numbers=array;
@@ -399,7 +405,6 @@ public class ChessNumber {
             e.printStackTrace();
             System.out.println("读取文件时出错：" + e.getMessage());
             label.setText("读取文件时出错");
-            steps=-1;
         }
 
         Button YesButn=new Button("确认");
@@ -426,7 +431,7 @@ public class ChessNumber {
         AlertStage.show();
         return steps;
     }
-    public boolean checkGameOver(int pattern, String mode, int choice,int time)
+    public int checkGameOver(int pattern, String mode, int choice,int time)
     {
         if(mode.equals("classic")){
             int maxNum=0;
@@ -437,18 +442,18 @@ public class ChessNumber {
                     if(numbers[i][j]>maxNum)maxNum=numbers[i][j];
                 }
             }
-            if(maxNum==choice)return true;
+            if(maxNum==choice)return 2;
         }
         for(int i=0;i<X_COUNT;i++)
         {
             for(int j=0;j<X_COUNT;j++)
             {
-                if(numbers[i][j]==0)return false;
-                if(i>0&&numbers[i][j]==numbers[i-1][j])return false;
-                if(j>0&&numbers[i][j]==numbers[i][j-1])return false;
+                if(numbers[i][j]==0)return 0;
+                if(i>0&&numbers[i][j]==numbers[i-1][j])return 0;
+                if(j>0&&numbers[i][j]==numbers[i][j-1])return 0;
             }
         }
-        return true;
+        return 1;
     }
     public void setUserName(String s) {userName=s;}
     public int getX_COUNT() {
@@ -504,8 +509,19 @@ public class ChessNumber {
                 Key = (Key * t + num[i][j]) % p;
             }
         }
-        if (Key == trueKey) return true;
-        return false;
+        System.out.println("Key:"+Key);
+        return Key == trueKey;
+    }
+    public void putKeyword(int step,int score,int time,int Count,int[][]num,int choice) {
+        long Key = 0, p = 1000000093, t = 100043;
+        Key = ((step * t + score) % p * t + time) % p;
+        Key = ((Key * t + Count) % p * t + choice) % p;
+        for (int i = 0; i < Count; i++) {
+            for (int j = 0; j < Count; j++) {
+                Key = (Key * t + num[i][j]) % p;
+            }
+        }
+        System.out.println("Key:"+Key);
     }
     public void doReserve()
     {

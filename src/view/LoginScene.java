@@ -4,9 +4,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 
 import java.io.BufferedReader;
@@ -37,6 +36,7 @@ public class LoginScene{
     private double height;
     private double width;
     private Scene scene;
+    private Image image = new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\4.jpg");
     public LoginScene()
     {
         titleLabel.setFont(new Font(20));
@@ -62,10 +62,15 @@ public class LoginScene{
         otherHBox.getChildren().addAll(forgetPasswordBtn, registerBtn);
         // 将HBox添加到VBox中
         mainVBox.getChildren().addAll(titleHBox, inputVBox, otherHBox,loginButton,visitorBtn);
+
+        Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
+        root.setBackground(background);
+
         root.getChildren().add(mainVBox);
         scene=new Scene(root,900,550);;
     }
-    /*public boolean authenticate(TextField account, PasswordField password) {
+    /*
+    public boolean authenticate(TextField account, PasswordField password) {
         try (BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\86189\\IdeaProjects\\javafx\\UserInfo.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {

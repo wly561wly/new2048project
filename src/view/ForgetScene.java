@@ -7,7 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,8 +23,9 @@ public class ForgetScene {
     TextField account = new TextField();
     PasswordField password = new PasswordField();
     VBox forgetRoot = new VBox(30); // 竖直间距为30
-    Scene scene = new Scene(mainVBox,900,550);
+    Scene scene;
     boolean confirm = false;
+    private Image image = new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\4.jpg");
     public ForgetScene() {
         mainVBox.setMaxWidth(400);
         forgetRoot.setMaxWidth(400);
@@ -32,6 +34,9 @@ public class ForgetScene {
         forgetRoot.setAlignment(Pos.CENTER_LEFT); // 内容左对齐
         forgetRoot.getChildren().addAll(accountLabel, account, passwordLabel, password, confirmBtn, backBtn);
         mainVBox.getChildren().add(forgetRoot);
+        Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
+        mainVBox.setBackground(background);
+        scene = new Scene(mainVBox,900,550);
     }
 
     public Scene getScene(){

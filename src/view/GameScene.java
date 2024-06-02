@@ -7,6 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -15,6 +16,7 @@ import javafx.util.Duration;
 import model.ChessNumber;
 import model.RankElement;
 
+import javax.swing.*;
 import java.time.Instant;
 
 import static javafx.stage.Modality.APPLICATION_MODAL;
@@ -55,6 +57,7 @@ public class GameScene {
     private Button restartButton = new Button("Restart");
     private Button rankButton = new Button("Rank");
     private Button exitButton = new Button("Exit");
+    private Image image;
     public GameScene(int X_COUNT,int Y_COUNT,String usersName,int pattern,String mode,int choice,boolean AutoSave){
         time=0;
         x_Count=X_COUNT;y_Count=Y_COUNT;
@@ -66,6 +69,10 @@ public class GameScene {
         this.autosave=AutoSave;
         this.rankList=new RankList(mode);
         running=1;
+        image= new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\5.jpg");
+        if(pattern==1)new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\2.jpg");
+        if(pattern==2)new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\4.jpg");
+        if(pattern==3)new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\5.jpg");
 
         if(mode.equals("classic"))titileLabel.setText("模式：经典模式 "+String.valueOf(choice)+"场");
         else if(mode.equals("challenge"))titileLabel.setText("模式：挑战模式 "+String.valueOf(choice)+"s 场");
@@ -111,7 +118,17 @@ public class GameScene {
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             // 更新显示的时间
             java.time.Duration elapsed = java.time.Duration.between(startTime, Instant.now());
+
             if(running>0)time++;
+
+            if(mode.equals("challenge")){
+                if(choice==time&&running==1)doGameOver(0);
+                if(time>choice){
+                    time=choice;
+                    if(running==1)doGameOver(0);
+                }
+            }
+
             long minutes =time/60;
             long seconds =time%60;
             timeLabel.setText(String.format("时间：%02d:%02d", minutes, seconds));
@@ -124,13 +141,22 @@ public class GameScene {
                 if(choice-time<=10){
                     timeLabel.setTextFill(Color.RED);
                 }
-                if(choice==time&&running==1)doGameOver();
+                if(choice==time&&running==1)doGameOver(0);
+                if(time>choice){
+                    time=choice;
+                    doGameOver(0);
+                }
             }
             // autoSave();
             if(AutoSave==true){
                 if(seconds==15||seconds==45){
-                    updateRank();
-                    chessNumber.saveNumber(steps,0,time);
+                    if(userName.equals("Visitor_1231")){
+                        System.out.println("Visitor Don't have save");
+                    }
+                    else {
+                        updateRank();
+                        chessNumber.saveNumber(steps,0,time);
+                    }
                 }
             }
         }));
@@ -150,6 +176,9 @@ public class GameScene {
         directionButtons.setLayoutY(200);
         functionButtons.setLayoutX(650);
         functionButtons.setLayoutY(300);
+
+        Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
+        root.setBackground(background);
         root.getChildren().addAll(titileLabel,timeLabel,menuBox,ChesPane,directionButtons,functionButtons,labelStep,labelscores);
 
 //        String cssUrl = Objects.requireNonNull(this.getClass().getResource("MyStyle.css")).toExternalForm(); // 假设CSS文件位于项目的根资源文件夹中
@@ -199,21 +228,36 @@ public class GameScene {
         });
 
         saveButton.setOnAction(event ->{
-            updateRank();
-            System.out.println("Do SaveGame here!");
-            chessNumber.saveNumber(steps,1,time);
-            this.updateGridsNumber();
+            if(userName.equals("Visitor_1231")){
+                System.out.println("Visitor Don't have save");
+            }
+            else {
+                updateRank();
+                System.out.println("Do SaveGame here!");
+                chessNumber.saveNumber(steps,1,time);
+                this.updateGridsNumber();
+            }
         });
         getMenubar().getSave().setOnAction(event ->{
-            updateRank();
-            System.out.println("Do SaveGame here!");
-            chessNumber.saveNumber(steps,1,time);
-            this.updateGridsNumber();
+            if(userName.equals("Visitor_1231")){
+                System.out.println("Visitor Don't have save");
+            }
+            else {
+                updateRank();
+                System.out.println("Do SaveGame here!");
+                chessNumber.saveNumber(steps,1,time);
+                this.updateGridsNumber();
+            }
         });
 
         loadButton.setOnAction(event ->{
-            LoadGame();
-            System.out.println("Do LoadGame here!");
+            if(userName.equals("Visitor_1231")){
+                System.out.println("Visitor Don't have save");
+            }
+            else {
+                LoadGame();
+                System.out.println("Do LoadGame here!");
+            }
         });
 
         rankButton.setOnAction(event->{
@@ -254,15 +298,15 @@ public class GameScene {
         labelStep.setText("Step: "+Integer.toString(steps));
         labelscores.setText("Scores: "+Integer.toString(chessNumber.getScores()));
         chessPane.ChessPanePaint(chessNumber.getNumber());
-        if(chessNumber.checkGameOver(pattern,mode,choice,time)){
-            doGameOver();
-        }
+        int p=chessNumber.checkGameOver(pattern,mode,choice,time);
+        if(p==1)doGameOver(0);
+        else if(p==2)doGameOver(1);
     }
     //游戏结束的操作
-    public void doGameOver(){
+    public void doGameOver(int p){
         running=0;//停止运行
         updateRank();
-        GameOver gameover=new GameOver(chessNumber.getScores());
+        GameOver gameover=new GameOver(p,chessNumber.getScores());
         Scene overScene=gameover.getScene();
         Stage overStage=new Stage();
         overStage.initModality(APPLICATION_MODAL);
@@ -333,13 +377,19 @@ public class GameScene {
     public void restartGame()
     {
         steps=0;
+        time=0;
         running=1;
+        if(titileLabel.getTextFill()==Color.RED)titileLabel.setTextFill(Color.BLACK);
         chessNumber.clearNumbers();
         chessNumber.initialNumbers();
         this.updateGridsNumber();
     }
+    public void setRunning(int x){
+        running=x;
+    }
     public void restartGame(int step,ChessNumber chessNum){
         int scores=chessNumber.getScores();
+        setRunning(0);
         Label settleLabel= new Label("本局游戏得分为："+ Integer.toString(scores));
         Label levelLabel= new Label();
         Label hintLabel = new Label("你希望保存本局游戏吗");
@@ -395,17 +445,28 @@ public class GameScene {
         Stage stageGameSettle= new Stage();
 
         saveAndRestart.setOnAction(event ->{
-            updateRank();
-            chessNumber.saveNumber(step,1,time);
-            restartGame();
+            if(userName.equals("Visitor_1231")){
+                System.out.println("Visitor Don't have save");
+            }
+            else {
+                updateRank();
+                chessNumber.saveNumber(step,1,time);
+                restartGame();
+            }
+            setRunning(1);
             stageGameSettle.close();
+        });
+        stageGameSettle.setOnCloseRequest(e -> {
+            setRunning(1);
         });
         settlePane.setOnMouseClicked(event->{
             restartGame();
+            setRunning(1);
             stageGameSettle.close();
         });
         restartButton.setOnAction(event->{
             restartGame();
+            setRunning(1);
             stageGameSettle.close();
         });
         stageGameSettle.setTitle("Restart Game");
@@ -416,6 +477,7 @@ public class GameScene {
     public void LoadGame()
     {
         //加入一个提醒界面
+        setRunning(0); //时间暂停
         Label hintlabel=new Label("你确定要加载存档吗（可能会丢失当前游戏进度）");
         Button YesButn=new Button("Yes");
         Button NoButn=new Button("No");
@@ -430,7 +492,9 @@ public class GameScene {
         loadPane.getChildren().addAll(hintlabel,YesButn,NoButn);
         Scene loadScene=new Scene(loadPane,300,300);
         Stage loadStage=new Stage();
-
+        loadStage.setOnCloseRequest(e -> {
+            setRunning(1);
+        });
         YesButn.setOnAction(Newevent->{
             int Step=steps;
             steps=chessNumber.loadNumber();
@@ -441,9 +505,10 @@ public class GameScene {
             }
             time=chessNumber.getTime();
             if(x_Count!=chessNumber.getX_COUNT()){
-
+                setX_Count(chessNumber.getX_COUNT());
             }
             this.updateGridsNumber();
+            setRunning(1);
             loadStage.close();
             if(steps==-1){
                 //需加入继续或者重开的选项
@@ -451,6 +516,7 @@ public class GameScene {
             }
         });
         NoButn.setOnAction(Newevent->{
+            setRunning(1);
             loadStage.close();
         });
 
@@ -479,8 +545,8 @@ public class GameScene {
         if(x_Count==x)return;
         x_Count=x;
         y_Count=x_Count;
-        if(chessPane.getX_count()!=x)chessPane=new ChessPane(x_Count,y_Count,chessNumber.getNumber(),500,pattern);
         if(chessNumber.getX_COUNT()!=x)chessNumber=new ChessNumber(x,y_Count,userName,mode,choice);
+        if(chessPane.getX_count()!=x)chessPane=new ChessPane(x_Count,y_Count,chessNumber.getNumber(),500,pattern);
     }
     public int getX_Count(){return x_Count;}
     public MenuBar getMenubar() {
@@ -488,13 +554,20 @@ public class GameScene {
     }
     public void ShowRank()
     {
+        setRunning(0);
         if(mode.equals("classic"))rankList=new RankList(mode);
         else rankList=new RankList(mode);
         Stage stage=new Stage();
         stage.setTitle("Rank");
         stage.setScene(rankList.getScene());
         stage.show();
+        stage.setOnCloseRequest(e -> {
+            setRunning(1);
+        });
     }
     public void updateRank()
-    {if(x_Count==4)rankList.WriteFile(mode,new RankElement(userName,steps,chessNumber.getScores(),time));}
+    {
+        if(userName.equals("Visitor_1231"))return;
+        if(x_Count==4)rankList.WriteFile(mode,new RankElement(userName,steps,chessNumber.getScores(),time));
+    }
 }
