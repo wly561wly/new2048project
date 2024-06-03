@@ -17,6 +17,8 @@ public class MenuBar {
     private MenuItem restartItem =new Menu("重新开始");
     private MenuItem save = new Menu("保存游戏");
     private Menu menuOther=new Menu("其他");
+    private MenuItem menuHint=new Menu("提示");
+    private MenuItem menuback=new Menu("撤销");
     private MenuItem settingItem = new Menu("设置");
     private MenuItem helpItem = new Menu("帮助");
     private Slider volumeSlider = new Slider(0,100,50);
@@ -28,7 +30,7 @@ public class MenuBar {
    public MenuBar(){
 
        menuFile.getItems().addAll(restartItem,save);
-       menuOther.getItems().addAll(settingItem,helpItem,back,about);
+       menuOther.getItems().addAll(menuHint,menuback,settingItem,helpItem,back,about);
        menuBar.getMenus().addAll(menuFile,menuOther);
        helpItem.setOnAction(event -> {
            Help help1 = new Help();
@@ -82,10 +84,6 @@ public class MenuBar {
         return restartItem;
     }
 
-    public void setRestartItem(Menu restartItem) {
-        this.restartItem = restartItem;
-    }
-
     public MenuItem getSave() {
         return save;
     }
@@ -101,14 +99,17 @@ public class MenuBar {
     public void setBack(Menu back) {
         this.back = back;
     }
+    public MenuItem getMenuHint() {
+        return menuHint;
+    }
 
+    public MenuItem getMenuback() {
+        return menuback;
+    }
 
     public MenuItem getAbout() {
         return about;
     }
 
-    public void setAbout(Menu about) {
-        this.about = about;
-    }
     public javafx.scene.control.MenuBar getMenuBar(){return menuBar;}
 }

@@ -8,6 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import model.AI_trainer;
 import model.ChessNumber;
 import model.UserImform;
 import view.*;
@@ -41,6 +42,7 @@ public class Main extends Application {
     StartScene startScene = new StartScene();
     Setting setting = new Setting(0);
     Help help =new Help();
+    AI_trainer aiTrainer=new AI_trainer(0);
     @Override
     public void start(Stage primaryStage) throws Exception{
 
@@ -266,6 +268,14 @@ public class Main extends Application {
         mainScene.getBtn_back2().setOnAction(event -> {
             primaryStage.setScene(loginScene.getScene());
         });
+        mainScene.getAIbtn().setOnAction(event->{
+            AIscene aIscene=new AIscene(4,4,"AI",0,"scores",0);
+            primaryStage.setScene(aIscene.getScene());
+            aIscene.getExitButton().setOnAction(actionEvent ->{
+                primaryStage.setScene(mainScene.getScene());
+                aIscene.setRunning(0);
+            });
+        });
         //选择界面的返回监听
         classicChooseScene.getExitButton().setOnAction(event->{
             if(gameScene!=null)if(gameScene.getX_Count()!=X_COUNT){
@@ -283,7 +293,6 @@ public class Main extends Application {
         });
 
 
-
         //设置退出提示
         primaryStage.setOnCloseRequest(event -> {
             event.consume();
@@ -299,6 +308,7 @@ public class Main extends Application {
 
     //    primaryStage.setResizable(false);
         primaryStage.show();
+
     }
 
     public void prepare(Stage stage)
@@ -674,5 +684,24 @@ public class Main extends Application {
                 System.out.println("No RadioButton selected");
             }
         });
+    }
+    public void WriteAI()
+    {
+        if(aiTrainer==null)return;
+        String path="C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\AI_p.txt";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
+            int[][]P=aiTrainer.getP();
+            for(int i=0;i<10;i++) {
+                for(int j=0;j<18;j++)
+                {
+                    writer.write(String.valueOf(P[i][j]));
+                    if(j!=17)writer.write(",");
+                }
+                writer.newLine(); // 写入新行
+            }
+        } catch (IOException e) {
+            System.out.println("写入用户文件出错");
+            throw new RuntimeException(e);
+        }
     }
 }

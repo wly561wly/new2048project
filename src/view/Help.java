@@ -14,6 +14,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import static javafx.stage.Modality.APPLICATION_MODAL;
+
 public class Help {
     Label indexlabel = new Label("目录");
     Button outlook = new Button("游玩");
@@ -129,6 +131,7 @@ public class Help {
         });
 
         Scene scene = new Scene(root,600,600);
+        stage.initModality(APPLICATION_MODAL);
         stage.setScene(scene);
         stage.setTitle("帮助");
     }

@@ -26,6 +26,7 @@ public class MainScene {
     private Button btn_setting=new Button("设置");
     private Button btn_back = new Button("返回标题界面");
     private Button btn_back2 = new Button("返回登录界面");
+    private Button AIbtn=new Button("AI");
     VBox root = new VBox(20); // 使用VBox并设置间距
     private Scene scene;
     private double height;
@@ -57,7 +58,7 @@ public class MainScene {
         Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
         root.setBackground(background);
 
-        root.getChildren().addAll(label, btn_mode1, btn_mode2, btn_mode3,btn_help,btn_setting,btn_back,btn_back2);
+        root.getChildren().addAll(label, btn_mode1, btn_mode2, btn_mode3,btn_help,btn_setting,btn_back,btn_back2,AIbtn);
         scene = new Scene(root, 900, 550); // 增大场景尺寸以适应所有标签
 
     }
@@ -66,6 +67,7 @@ public class MainScene {
     public Label getLabel() {
         return label;
     }
+    public Button getAIbtn(){return AIbtn;}
 
     public void setLabel(Label label) {
         this.label = label;

@@ -12,6 +12,7 @@ import javafx.scene.text.FontWeight;
 
 public class ChessPane {
     private int X_count;
+    private int word_size;
     private int [][] grid;
     private double gridWidth,gridHeight;
     private int[] numTable={1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536};
@@ -22,6 +23,9 @@ public class ChessPane {
         X_count=x_Count;
         gridPane = new GridPane();
         grid = new int[x_Count][y_Count];
+        if(x_Count<6)word_size=35;
+        else if(x_Count<8)word_size=25;
+        else word_size=18;
         this.pattern=pattern;
         this.gridWidth =500/y_Count-10;
         this.gridHeight=500/x_Count-10;
@@ -44,7 +48,7 @@ public class ChessPane {
                 else color = getColorForValue(value);
                 if(value==0) cell =new Label();
                 else cell = new Label(String.valueOf(value));
-                cell.setFont(Font.font("Arial",FontWeight.BLACK, FontPosture.REGULAR,35));
+                cell.setFont(Font.font("Arial",FontWeight.BLACK, FontPosture.REGULAR,word_size));
                 // 根据值的大小设置颜色
                 //Color.web("#CDC0B4");
                 cell.setBackground(new Background(new BackgroundFill(color, null, null)));

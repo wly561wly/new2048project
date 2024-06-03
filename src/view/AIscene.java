@@ -1,7 +1,7 @@
 package view;
 
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -20,75 +20,53 @@ import model.ChessNumber;
 import model.RankElement;
 
 import java.time.Instant;
-import java.util.Random;
 
 import static javafx.stage.Modality.APPLICATION_MODAL;
 
-public class GameScene {
-    private int time;//时间
-    private int steps;//步数
+public class AIscene {
+    private int time;
+    private int steps;
     private int scores;
     private int x_Count;
     private int y_Count;
-    private MenuBar menubar = new MenuBar();
     private ChessNumber chessNumber;
     private ChessPane chessPane;
     private Scene scene;
     private int pattern;
-    private String mode;
-    private int choice;
     private int running;//表示游戏是否在运行
-    private String userName;
-    private boolean autosave;
-    private Instant startTime;//开始时间
-    private RankList rankList; //排行榜
+    private Instant startTime;
     private Label titileLabel=new Label();
     private Label timeLabel=new Label("时间：00:00");//时间轴
 
     private Label labelStep=new Label("Step: 0");
     private Label labelscores=new Label("Scores: 0");
-    private Label Hintlabel = new Label();
-
+    private Button pauseBtn=new Button("Pause");
+    private Button restartBtn=new Button("Restart");
+    private Button exitButton=new Button("Exit");
     // 创建方向按键
-    private Button upButton = new Button("↑");
-    private Button downButton = new Button("↓");
-    private Button leftButton = new Button("←");
-    private Button rightButton = new Button("→");
-
-    // 创建功能按钮
-    private Button loadButton = new Button("Load");
-    private Button saveButton = new Button("Save");
-    private Button restartButton = new Button("Restart");
-    private Button rankButton = new Button("Rank");
-    private Button exitButton = new Button("Exit");
-    private Pane root = new Pane();
-    private Node ChesPane;  //棋盘弄得。
-    private Image image;  //背景图片
-    public GameScene(int X_COUNT,int Y_COUNT,String usersName,int pattern,String mode,int choice,boolean AutoSave){
+    private Image image;
+    Assess assess;
+    private int[] a;
+    AI_trainer ai_trainer=new AI_trainer(0);
+    public AIscene(int X_COUNT,int Y_COUNT,String usersName,int pattern,String mode,int choice){
         time=0;
         x_Count=X_COUNT;y_Count=Y_COUNT;
 
-        this.userName=usersName;
         this.pattern=pattern;
-        this.mode=mode;
-        this.choice=choice;
-        this.autosave=AutoSave;
-        this.rankList=new RankList(mode);
         running=1;
         image= new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\5.jpg");
         if(pattern==1)new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\2.jpg");
         if(pattern==2)new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\4.jpg");
         if(pattern==3)new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\5.jpg");
 
-        if(mode.equals("classic"))titileLabel.setText("模式：经典模式 "+String.valueOf(choice)+"场");
-        else if(mode.equals("challenge"))titileLabel.setText("模式：挑战模式 "+String.valueOf(choice)+"s 场");
-        else titileLabel.setText("模式：无尽模式");
+        titileLabel.setText("模式：无尽模式");
 
-        chessNumber=new ChessNumber(X_COUNT,Y_COUNT,userName,mode,choice);
+        chessNumber=new ChessNumber(X_COUNT,Y_COUNT,usersName,mode,choice);
 
         chessPane=new ChessPane(X_COUNT,Y_COUNT,chessNumber.getNumber(),500,pattern);
 
         //布局
+
         titileLabel.setLayoutX(580);
         titileLabel.setLayoutY(40);
         timeLabel.setLayoutX(580);
@@ -102,23 +80,18 @@ public class GameScene {
         timeLabel.setFont(new Font(24)); // 设置字体大小
         labelStep.setFont(new Font(24));
         labelscores.setFont(new Font(24));
-        Hintlabel.setFont(new Font(35));
 
         // 将方向按键放入BorderPane中
         BorderPane directionButtons= new BorderPane();
-        directionButtons.setBottom(downButton);
-        directionButtons.setTop(upButton);
-        directionButtons.setLeft(leftButton);
-        directionButtons.setRight(rightButton);
 
 //        loadButton.getStyleClass().add("my-button");//  尝试使用Css对按钮改良
 
         // 将功能按钮放入VBox中
-        VBox functionButtons = new VBox(10, loadButton, saveButton, restartButton, rankButton, exitButton,Hintlabel);
+        VBox functionButtons = new VBox(10,pauseBtn,restartBtn,exitButton);
         functionButtons.setAlignment(Pos.TOP_RIGHT); // 顶部右对齐
 
         //menuBar
-        VBox menuBox =new VBox(10,menubar.getMenuBar());
+        //VBox menuBox =new VBox(10,menubar.getMenuBar());
 
         // 初始化时间轴
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
@@ -139,32 +112,6 @@ public class GameScene {
             long seconds =time%60;
             timeLabel.setText(String.format("时间：%02d:%02d", minutes, seconds));
 
-            // 仅测试Rank
-            //if(time==5&&running==1)doGameOver();
-
-            //增加红色提醒
-            if(mode.equals("challenge")){
-                if(choice-time<=10){
-                    timeLabel.setTextFill(Color.RED);
-                }
-                if(choice==time&&running==1)doGameOver(0);
-                if(time>choice){
-                    time=choice;
-                    doGameOver(0);
-                }
-            }
-            // autoSave();
-            if(AutoSave==true){
-                if(seconds==15||seconds==45){
-                    if(userName.equals("Visitor_1231")){
-                        System.out.println("Visitor Don't have save");
-                    }
-                    else {
-                        updateRank();
-                        chessNumber.saveNumber(steps,0,time);
-                    }
-                }
-            }
         }));
         // 设置时间轴无限循环
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -174,7 +121,8 @@ public class GameScene {
         timeline.play();
 
         // 整体位置布局
-        ChesPane=chessPane.getGridPane();
+        Pane root = new Pane();
+        Node ChesPane=chessPane.getGridPane();
         ChesPane.setLayoutX(50);
         ChesPane.setLayoutY(30);
         directionButtons.setLayoutX(650);
@@ -184,143 +132,100 @@ public class GameScene {
 
         Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
         root.setBackground(background);
-        root.getChildren().addAll(titileLabel,timeLabel,menuBox,ChesPane,directionButtons,functionButtons,labelStep,labelscores);
+        root.getChildren().addAll(titileLabel,timeLabel,ChesPane,directionButtons,functionButtons,labelStep,labelscores);
 
 //        String cssUrl = Objects.requireNonNull(this.getClass().getResource("MyStyle.css")).toExternalForm(); // 假设CSS文件位于项目的根资源文件夹中
 //        root.getStylesheets().add(cssUrl); // 将CSS添加到根节点
 
         // 创建一个场景并设置到舞台上
         scene = new Scene(root, 900, 550);
-
-        //使这些按钮失去键盘导航 的焦点
-        upButton.setFocusTraversable(false);
-        leftButton.setFocusTraversable(false);
-        rightButton.setFocusTraversable(false);
-        downButton.setFocusTraversable(false);
-        loadButton.setFocusTraversable(false);
-        restartButton.setFocusTraversable(false);
-        exitButton.setFocusTraversable(false);
-        saveButton.setFocusTraversable(false);
-        rankButton.setFocusTraversable(false);
-
-        //添加按钮的监听
-        upButton.setOnAction(event -> {
-            MoveUp();
-            this.updateGridsNumber();
+        restartBtn.setOnAction(event->{
+            restartGame();
+            StartGameLoop();
         });
-
-        downButton.setOnAction(event -> {
-            MoveDown();
-            this.updateGridsNumber();
-        });
-
-        leftButton.setOnAction(event -> {
-            MoveLeft();
-            this.updateGridsNumber();
-        });
-
-        rightButton.setOnAction(event -> {
-            MoveRight();
-            this.updateGridsNumber();
-        });
-
-        loadButton.setOnAction(event ->{
-            if(userName.equals("Visitor_1231")){
-                System.out.println("Visitor Don't have save");
+        pauseBtn.setOnAction(event->{
+            if(running==0){
+                running=1;
+                StartGameLoop();
+                pauseBtn.setText("Pause");
             }
             else {
-                LoadGame();
-                System.out.println("Do LoadGame here!");
-            }
-        });
-        saveButton.setOnAction(event ->{
-            if(userName.equals("Visitor_1231")){
-                System.out.println("Visitor Don't have save");
-            }
-            else {
-                updateRank();
-                System.out.println("Do SaveGame here!");
-                chessNumber.saveNumber(steps,1,time);
-                this.updateGridsNumber();
-            }
-        });
-        restartButton.setOnAction(event -> {
-            restartGame(steps,chessNumber);
-            System.out.println("Do RestartGame here!");
-        });
-        rankButton.setOnAction(event->{
-            ShowRank();
-        });
-
-        //键盘操作
-        scene.setOnKeyPressed(event -> {
-            switch (event.getCode()) {
-                case W:
-                case UP:
-                    MoveUp();
-                    this.updateGridsNumber();
-                    break;
-                case S:
-                case DOWN:
-                    MoveDown();
-                    this.updateGridsNumber();
-                    break;
-                case A:
-                case LEFT:
-                    MoveLeft();
-                    this.updateGridsNumber();
-                    break;
-                case D:
-                case RIGHT:
-                    MoveRight();
-                    this.updateGridsNumber();
-                    break;
-                default:
-                    break;
+                running=0;
+                pauseBtn.setText("Continue");
             }
         });
 
-        //菜单栏操作
-        getMenubar().getRestartItem().setOnAction(event -> {
-            restartGame(steps,chessNumber);
-            System.out.println("Do RestartGame here!");
-        });
-        getMenubar().getSave().setOnAction(event ->{  //保存操作
-            if(userName.equals("Visitor_1231")){
-                System.out.println("Visitor Don't have save");
-            }
-            else {
-                updateRank();
-                System.out.println("Do SaveGame here!");
-                chessNumber.saveNumber(steps,1,time);
-                this.updateGridsNumber();
-            }
-        });
-        getMenubar().getMenuback().setOnAction(event->{  //撤销操作
-            if(chessNumber.doTheBack()) {
-                steps--;
-                this.updateGridsNumber();
-            }
-        });
-        getMenubar().getMenuHint().setOnAction(event->{  //提示操作
-            doTheHint();
-        });
-
+        a=ai_trainer.getP()[0];
+        StartGameLoop();
     }
+    public void StartGameLoop()
+    {
+        if(running==0)return;
+        int[][]save=new int[4][4];
+        int ini_scores=chessNumber.getScores();
+        int[][]num=chessNumber.getNumber();
+        int[] mark={0,0,0,0};
+        for(int i=0;i<4;i++)
+        {
+            for(int j=0;j<4;j++)
+            {
+                save[i][j]=num[i][j];
+            }
+        }
+        int p=0;
+        if(chessNumber.moveRight()) {
+            assess = new Assess(chessNumber.getNumber(), a, 0);
+            mark[0] = assess.getScores();
+        }
+        else mark[0]=-9999999;
+
+        p=1;chessNumber.setNumber(save);
+        if(chessNumber.moveLeft()){
+            assess=new Assess(chessNumber.getNumber(),a,1);
+            mark[1]=assess.getScores();
+        }
+        else mark[1]=-9999999;
+
+        p=2;chessNumber.setNumber(save);
+        if(chessNumber.moveUp()){
+            assess=new Assess(chessNumber.getNumber(),a,2);
+            mark[2]=assess.getScores();
+        }
+        else mark[2]=-9999999;
+
+        p=3;chessNumber.setNumber(save);
+        if(chessNumber.moveDown()) {
+            assess = new Assess(chessNumber.getNumber(), a, 3);
+            mark[3] = assess.getScores();
+        }
+        else mark[3]=-9999999;
+
+        chessNumber.setNumber(save);
+        chessNumber.setScores(ini_scores);
+        if(mark[0]>=mark[1]&&mark[0]>=mark[2]&&mark[0]>=mark[3])MoveRight();
+        else if(mark[1]>=mark[0]&&mark[1]>=mark[2]&&mark[1]>=mark[3])MoveLeft();
+        else if(mark[2]>=mark[0]&&mark[2]>=mark[1]&&mark[2]>=mark[3])MoveUp();
+        else MoveDown();
+        updateGridsNumber();
+        PauseTransition pause = new PauseTransition(Duration.seconds(0.05));//停顿时间
+        pause.setOnFinished(event->{
+            if(chessNumber.checkGameOver(0,"scores",0,0)==0)StartGameLoop();
+        });
+        pause.play();
+    }
+
     //更新棋盘，检测游戏是否解释
     public void updateGridsNumber() {
         labelStep.setText("Step: "+Integer.toString(steps));
         labelscores.setText("Scores: "+Integer.toString(chessNumber.getScores()));
         chessPane.ChessPanePaint(chessNumber.getNumber());
-        int p=chessNumber.checkGameOver(pattern,mode,choice,time);
+        int p=chessNumber.checkGameOver(pattern,"scores",0,time);
         if(p==1)doGameOver(0);
         else if(p==2)doGameOver(1);
-
     }
     //游戏结束的操作
-    public void doGameOver(int p){
+    public void doGameOver(int p){//p表示经典模式下胜利
         running=0;//停止运行
-        updateRank();
         GameOver gameover=new GameOver(p,chessNumber.getScores());
         Scene overScene=gameover.getScene();
         Stage overStage=new Stage();
@@ -375,7 +280,6 @@ public class GameScene {
     }
     public int getSteps(){return steps;}
     public int getTime(){return time;}
-    public int getChoice(){return choice;}
 
     public ChessPane getChessPane() {
         return chessPane;
@@ -460,14 +364,8 @@ public class GameScene {
         Stage stageGameSettle= new Stage();
 
         saveAndRestart.setOnAction(event ->{
-            if(userName.equals("Visitor_1231")){
-                System.out.println("Visitor Don't have save");
-            }
-            else {
-                updateRank();
-                chessNumber.saveNumber(step,1,time);
-                restartGame();
-            }
+            chessNumber.saveNumber(step,1,time);
+            restartGame();
             setRunning(1);
             stageGameSettle.close();
         });
@@ -513,11 +411,8 @@ public class GameScene {
         YesButn.setOnAction(Newevent->{
             int Step=steps;
             steps=chessNumber.loadNumber();
-            if(choice!=chessNumber.getChoice()){
-                choice=chessNumber.getChoice();
-                if(mode.equals("classic"))titileLabel.setText("模式：经典模式 "+String.valueOf(choice)+"场");
-                else if(mode.equals("challenge"))titileLabel.setText("模式：挑战模式 "+String.valueOf(choice)+"s 场");
-            }
+            titileLabel.setText("AI 积分模式");
+            time=chessNumber.getTime();
             if(x_Count!=chessNumber.getX_COUNT()){
                 setX_Count(chessNumber.getX_COUNT());
             }
@@ -539,17 +434,8 @@ public class GameScene {
         loadStage.initModality(APPLICATION_MODAL);
         loadStage.show();
     }
-    public void setUserName(String s)
-    {
-        userName=s;
-        chessNumber.setUserName(s);
-    }
     public void setChessPane(ChessPane pane){chessPane=pane;}
     public void setChessNumber(ChessNumber chessNumber){this.chessNumber=chessNumber;}
-    public String getMode(){return mode;}
-    public void setAutosave(boolean x){
-        autosave=x;
-    }
     public void setPattern(int x){
         pattern=x;
         if(chessPane!=null)chessPane.setPattern(x);
@@ -559,109 +445,8 @@ public class GameScene {
         if(x_Count==x)return;
         x_Count=x;
         y_Count=x_Count;
-        if(chessNumber.getX_COUNT()!=x)chessNumber=new ChessNumber(x_Count,y_Count,userName,mode,choice);
-        if(chessPane.getX_count()!=x){
-            root.getChildren().remove(ChesPane);
-            chessPane=new ChessPane(x_Count,y_Count,chessNumber.getNumber(),500,pattern);
-            ChesPane=chessPane.getGridPane();
-            ChesPane.setLayoutX(50);
-            ChesPane.setLayoutY(30);
-            root.getChildren().add(ChesPane);
-        }
-        updateGridsNumber();
+        if(chessNumber.getX_COUNT()!=x)chessNumber=new ChessNumber(x,y_Count,"AI","scores",0);
+        if(chessPane.getX_count()!=x)chessPane=new ChessPane(x_Count,y_Count,chessNumber.getNumber(),500,pattern);
     }
     public int getX_Count(){return x_Count;}
-    public MenuBar getMenubar() {
-        return menubar;
-    }
-    public void ShowRank()
-    {
-        setRunning(0);
-        if(mode.equals("classic"))rankList=new RankList(mode);
-        else rankList=new RankList(mode);
-        Stage stage=new Stage();
-        stage.setTitle("Rank");
-        stage.setScene(rankList.getScene());
-        stage.show();
-        stage.setOnCloseRequest(e -> {
-            setRunning(1);
-        });
-    }
-    public void updateRank()
-    {
-        if(userName.equals("Visitor_1231"))return;
-        if(x_Count==4)rankList.WriteFile(mode,new RankElement(userName,steps,chessNumber.getScores(),time));
-        rankList.DoSort();
-    }
-
-    public void doTheHint() //提示，选择一个方向
-    {
-        if(x_Count!=4){
-
-            return;
-        }
-        else {
-            //针对网格大小为4的
-            Random random=new Random();
-            AI_trainer aiTrainer=new AI_trainer(0);
-            Assess assess;//评估函数
-            int[] a=aiTrainer.getP()[(random.nextInt(10)+10)%10];//随机选择一个参数
-            int ini_scores=chessNumber.getScores();
-            int[][]num=chessNumber.getNumber();
-            int[] mark={0,0,0,0};
-            int[][]save=new int[4][4];
-            for(int i=0;i<4;i++)
-            {
-                for(int j=0;j<4;j++)
-                {
-                    save[i][j]=num[i][j];
-                }
-            }
-            int p=0;
-            if(chessNumber.moveRight()) {
-                assess = new Assess(chessNumber.getNumber(), a, 0);
-                mark[0] = assess.getScores();
-            }
-            else mark[0]=-9999999;
-
-            p=1;chessNumber.setNumber(save);
-            if(chessNumber.moveLeft()){
-                assess=new Assess(chessNumber.getNumber(),a,1);
-                mark[1]=assess.getScores();
-            }
-            else mark[1]=-9999999;
-
-            p=2;chessNumber.setNumber(save);
-            if(chessNumber.moveUp()){
-                assess=new Assess(chessNumber.getNumber(),a,2);
-                mark[2]=assess.getScores();
-            }
-            else mark[2]=-9999999;
-
-            p=3;chessNumber.setNumber(save);
-            if(chessNumber.moveDown()) {
-                assess = new Assess(chessNumber.getNumber(), a, 3);
-                mark[3] = assess.getScores();
-            }
-            else mark[3]=-9999999;
-
-            chessNumber.setNumber(save);
-            chessNumber.setScores(ini_scores);
-            if(mark[0]>=mark[1]&&mark[0]>=mark[2]&&mark[0]>=mark[3])Hintlabel.setText("→");
-            else if(mark[1]>=mark[0]&&mark[1]>=mark[2]&&mark[1]>=mark[3])Hintlabel.setText("←");
-            else if(mark[2]>=mark[0]&&mark[2]>=mark[1]&&mark[2]>=mark[3])Hintlabel.setText("↑");
-            else Hintlabel.setText("↓");
-
-            //设置动画
-            Timeline timeline = new Timeline(
-                    new KeyFrame(Duration.ZERO, new KeyValue(Hintlabel.opacityProperty(), 1.0)),
-                    new KeyFrame(Duration.seconds(1.5), new KeyValue(Hintlabel.opacityProperty(), 0))
-            );
-            //timeline.setCycleCount(Timeline.INDEFINITE); // 设置无限循环
-            //timeline.setAutoReverse(true); // 设置自动反向播放
-            // 启动动画
-            timeline.play();
-
-        }
-    }
 }

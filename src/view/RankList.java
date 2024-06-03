@@ -34,10 +34,15 @@ public class RankList {
         this.mode=mode;
         rank=new ArrayList<>();
         ReadFile(mode);
-        if(mode.equals("classic"))rank.sort(new compSteps());
-        else if(mode.equals("challenge"))rank.sort(new compScores());
+        DoSort();
         RankPrint();
     }
+    public void DoSort()
+    {
+        if(mode.equals("classic"))rank.sort(new compSteps());
+        else if(mode.equals("challenge")||mode.equals("scores"))rank.sort(new compScores());
+    }
+
     public void RankPrint()
     {
         for(int i=0;i<rank.size();i++){

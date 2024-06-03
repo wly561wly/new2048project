@@ -9,6 +9,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import static javafx.stage.Modality.APPLICATION_MODAL;
+
 public class Setting {
     Stage stage = new Stage();
     Label color = new Label("颜色");
@@ -64,6 +66,7 @@ public class Setting {
 
         // 创建场景并设置给Stage
         Scene scene = new Scene(vbox, 600, 600); // 场景大小为600x600像素
+        stage.initModality(APPLICATION_MODAL);
         stage.setTitle("设置");
         stage.setScene(scene);
     }

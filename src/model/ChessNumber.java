@@ -27,6 +27,9 @@ public class ChessNumber {
     private int choice;
 
     private int[][] numbers;
+    private boolean backYes =false;//表示能不能撤销
+    private int[][] preNum;//存储上一步棋盘
+    private int preScore;//存储上一步分数
 
     static Random random = new Random();
     public ChessNumber(int x_COUNT, int y_COUNT,String UserName,String mode,int choice)
@@ -59,8 +62,23 @@ public class ChessNumber {
             System.out.println();
         }
     }
+    public void savePre(int[][]a,int b)
+    {
+        backYes =true;
+        preNum=a;
+        preScore=b;
+    }
     //todo: finish the method of four direction moving.
     public boolean moveRight() {
+
+        int b=scores;
+        int[][]a=new int[X_COUNT][Y_COUNT];//临时存储
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++)
+                a[i][j]=numbers[i][j];
+        }
+
         int num=0;
         for(int i=0;i<numbers.length;i++) {
             int p = numbers[i].length - 1;
@@ -98,10 +116,20 @@ public class ChessNumber {
                     p--;
                 }
         }
+        savePre(a,b);//替换上一步
         RandomGeneraterNumber();
         return true;
     }
     public boolean moveUp() {
+
+        int b=scores;
+        int[][]a=new int[X_COUNT][Y_COUNT];//临时存储
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++)
+                a[i][j]=numbers[i][j];
+        }
+
         int num=0;
         for(int j=0;j<Y_COUNT;j++)
         {
@@ -142,10 +170,20 @@ public class ChessNumber {
                     p++;
                 }
         }
+        savePre(a,b);//替换上一步
         RandomGeneraterNumber();
         return true;
     }
     public boolean moveLeft() {
+
+        int b=scores;
+        int[][]a=new int[X_COUNT][Y_COUNT];//临时存储
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++)
+                a[i][j]=numbers[i][j];
+        }
+
         int num=0;
         for(int i=0;i<numbers.length;i++)
         {
@@ -186,10 +224,20 @@ public class ChessNumber {
                     p++;
                 }
         }
+        savePre(a,b);//替换上一步
         RandomGeneraterNumber();
         return true;
     }
     public boolean moveDown() {
+
+        int b=scores;
+        int[][]a=new int[X_COUNT][Y_COUNT];//临时存储
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++)
+                a[i][j]=numbers[i][j];
+        }
+
         int num=0;
         for(int j=0;j<Y_COUNT;j++)
         {
@@ -230,10 +278,24 @@ public class ChessNumber {
                     p--;
                 }
         }
+        savePre(a,b);//替换上一步
         RandomGeneraterNumber();
         return true;
     }
-
+    public boolean doTheBack()
+    {
+        if(backYes){
+            backYes=false;
+            System.out.println("撤销成功！");
+            scores=preScore;
+            setNumber(preNum);
+            return true;
+        }
+        else{
+            System.out.println("撤销失败！！！");
+            return false;
+        }
+    }
     public int getNumber(int i, int j) {
         return numbers[i][j];
     }
@@ -241,6 +303,11 @@ public class ChessNumber {
         return time;
     }
     public int[][] getNumber(){return numbers;}
+    public void setNumber(int[][] num){
+        for(int i=0;i<4;i++)
+            for(int j=0;j<4;j++)
+                numbers[i][j]=num[i][j];
+    }
 
     public void printNumber() {
         for (int[] line : numbers) {
@@ -261,12 +328,13 @@ public class ChessNumber {
                 }
             }
         }
-        int rand1=random.nextInt(xp.size()),rand2=random.nextInt(2);
-        if(rand2==0)rand2=2;
-        else rand2=4;
+        int rand1=random.nextInt(xp.size()),rand2=random.nextInt(9);
+        if(rand2==0)rand2=4;
+        else rand2=2;
         numbers[xp.get(rand1)][yp.get(rand1)]=rand2;
     }
     public int getScores(){return scores;}
+    public void setScores(int scores1){scores=scores1;}
 
     public void saveNumber(int step,int type,int time){saveNumber(step,type,numbers,time);}
 
