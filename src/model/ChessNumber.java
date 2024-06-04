@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import jdk.jfr.Unsigned;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,14 +16,20 @@ import java.util.Random;
 import static javafx.stage.Modality.APPLICATION_MODAL;
 
 public class ChessNumber {
-    private final int X_COUNT;
-    private final int Y_COUNT;
+    private int X_COUNT;
+    private int Y_COUNT;
     private String userName;
+
+    private int time=0;
     private int scores;
     private String Mode;
+
     private int choice;
 
     private int[][] numbers;
+    private boolean backYes =false;//表示能不能撤销
+    private int[][] preNum;//存储上一步棋盘
+    private int preScore;//存储上一步分数
 
     static Random random = new Random();
     public ChessNumber(int x_COUNT, int y_COUNT,String UserName,String mode,int choice)
@@ -37,7 +44,7 @@ public class ChessNumber {
         this.initialNumbers();
     }
     public void clearNumbers(){
-        scores=0;
+        scores=0;time=0;
         for(int i=0;i<X_COUNT;i++)
             for(int j=0;j<Y_COUNT;j++)
                 numbers[i][j]=0;
@@ -55,8 +62,23 @@ public class ChessNumber {
             System.out.println();
         }
     }
+    public void savePre(int[][]a,int b)
+    {
+        backYes =true;
+        preNum=a;
+        preScore=b;
+    }
     //todo: finish the method of four direction moving.
     public boolean moveRight() {
+
+        int b=scores;
+        int[][]a=new int[X_COUNT][Y_COUNT];//临时存储
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++)
+                a[i][j]=numbers[i][j];
+        }
+
         int num=0;
         for(int i=0;i<numbers.length;i++) {
             int p = numbers[i].length - 1;
@@ -94,10 +116,20 @@ public class ChessNumber {
                     p--;
                 }
         }
+        savePre(a,b);//替换上一步
         RandomGeneraterNumber();
         return true;
     }
     public boolean moveUp() {
+
+        int b=scores;
+        int[][]a=new int[X_COUNT][Y_COUNT];//临时存储
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++)
+                a[i][j]=numbers[i][j];
+        }
+
         int num=0;
         for(int j=0;j<Y_COUNT;j++)
         {
@@ -138,10 +170,20 @@ public class ChessNumber {
                     p++;
                 }
         }
+        savePre(a,b);//替换上一步
         RandomGeneraterNumber();
         return true;
     }
     public boolean moveLeft() {
+
+        int b=scores;
+        int[][]a=new int[X_COUNT][Y_COUNT];//临时存储
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++)
+                a[i][j]=numbers[i][j];
+        }
+
         int num=0;
         for(int i=0;i<numbers.length;i++)
         {
@@ -182,10 +224,20 @@ public class ChessNumber {
                     p++;
                 }
         }
+        savePre(a,b);//替换上一步
         RandomGeneraterNumber();
         return true;
     }
     public boolean moveDown() {
+
+        int b=scores;
+        int[][]a=new int[X_COUNT][Y_COUNT];//临时存储
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++)
+                a[i][j]=numbers[i][j];
+        }
+
         int num=0;
         for(int j=0;j<Y_COUNT;j++)
         {
@@ -226,14 +278,36 @@ public class ChessNumber {
                     p--;
                 }
         }
+        savePre(a,b);//替换上一步
         RandomGeneraterNumber();
         return true;
     }
-
+    public boolean doTheBack()
+    {
+        if(backYes){
+            backYes=false;
+            System.out.println("撤销成功！");
+            scores=preScore;
+            setNumber(preNum);
+            return true;
+        }
+        else{
+            System.out.println("撤销失败！！！");
+            return false;
+        }
+    }
     public int getNumber(int i, int j) {
         return numbers[i][j];
     }
+    public int getTime() {
+        return time;
+    }
     public int[][] getNumber(){return numbers;}
+    public void setNumber(int[][] num){
+        for(int i=0;i<4;i++)
+            for(int j=0;j<4;j++)
+                numbers[i][j]=num[i][j];
+    }
 
     public void printNumber() {
         for (int[] line : numbers) {
@@ -254,23 +328,30 @@ public class ChessNumber {
                 }
             }
         }
-        int rand1=random.nextInt(xp.size()),rand2=random.nextInt(2);
-        if(rand2==0)rand2=2;
-        else rand2=4;
+        int rand1=random.nextInt(xp.size()),rand2=random.nextInt(9);
+        if(rand2==0)rand2=4;
+        else rand2=2;
         numbers[xp.get(rand1)][yp.get(rand1)]=rand2;
     }
     public int getScores(){return scores;}
+    public void setScores(int scores1){scores=scores1;}
 
-    public void saveNumber(int step,int type){saveNumber(step,type,numbers);}
+    public void saveNumber(int step,int type,int time){saveNumber(step,type,numbers,time);}
 
-    public void saveNumber(int step,int type,int[][] num){
-        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\"+String.valueOf(choice)+"\\save.csv";
+    public void saveNumber(int step,int type,int[][] num,int time){
+        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\save.txt";
         Label label=new Label();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            //先保存步数和分数
+            //先保存步数,分数,时间,x_count,
             writer.write(String.valueOf(step));
             writer.write(",");
             writer.write(String.valueOf(scores));
+            writer.write(",");
+            writer.write(String.valueOf(time));
+            writer.write(",");
+            writer.write(String.valueOf(X_COUNT));
+            writer.write(",");
+            writer.write(String.valueOf(choice));
             writer.newLine();
             // 遍历二维数组
             for (int[] row : num) {
@@ -283,8 +364,12 @@ public class ChessNumber {
                 }
                 writer.newLine(); // 换行，以便下一行从新的行开始
             }
+            //增加一个密钥
+            writer.write(String.valueOf(getKeyword(step,num,time)));
+            writer.newLine();
+
             System.out.println("数组已成功保存到文件：" + filePath);
-            label.setText("已成功保存到文件：" + userName+"\\save.csv");
+            label.setText("已成功保存到文件：" + userName+"\\save.txt");
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("保存数组到文件时出错");
@@ -316,11 +401,12 @@ public class ChessNumber {
         AlertStage.initModality(APPLICATION_MODAL);
         AlertStage.show();
     }
-    public int loadNumber(){//还需要加入
+    public int loadNumber(){
+        //还需要加入
 
-        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\"+String.valueOf(choice)+"\\save.csv";
+        String filePath = "C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\users\\"+userName+"\\"+Mode+"\\save.txt";
         Label label=new Label();
-        int steps;
+        int steps=0;
 
         List<List<Integer>> list = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -330,7 +416,10 @@ public class ChessNumber {
             String[] values = line.split(",");
             steps = Integer.parseInt(values[0]);
             int nxtscores=Integer.parseInt(values[1]);
-
+            time=Integer.parseInt(values[2]);
+            int Count=Integer.parseInt(values[3]);
+            choice=Integer.parseInt(values[4]);
+            System.out.println("Count:"+Count);
             while ((line = reader.readLine()) != null) {
                 // 按逗号分割每行的内容
                 values = line.split(",");
@@ -342,17 +431,39 @@ public class ChessNumber {
                 // 将当前行列表添加到二维列表中
                 list.add(row);
             }
-            // 如果你需要将二维列表转换为二维数组（可选）
-            int[][] array = new int[list.size()][];
-            for (int i = 0; i < list.size(); i++) {
+            if(list.size()!=Count+1){
+                System.out.println("文件错误，错误代码为108");
+                //尝试还原文件
+                doReserve();
+                return 0;
+            }
+
+            // 将二维列表转换为二维数组
+            int[][] array = new int[list.size()-1][];
+            for (int i = 0; i < list.size()-1; i++) {
                 array[i] = list.get(i).stream().mapToInt(Integer::intValue).toArray();
             }
 
-            //在这里还需要检测array和scores，step是否合理
-            //check(array);
+            //在这里简单检测array和scores，step是否合理
+            if(!checkArray(array,Count)||(steps<0)||scores<0||scores%2>0){
+                System.out.println("文件错误，错误代码为107");
+                //尝试还原文件
+                doReserve();
+                return 0;
+            }
+
+            long Key=list.get(list.size()-1).get(0);
+           //Hash密钥验证
+            if(!checkKeyword(steps,nxtscores,time,Count,array,choice,Key)){
+                System.out.println("文件错误，错误代码为102");
+                doReserve();
+                return 0;
+            }
 
             scores=nxtscores;
             numbers=array;
+            X_COUNT=Count;
+            Y_COUNT=Count;
             // 打印二维数组（可选）
             for (int[] rowArray : array) {
                 for (int value : rowArray) {
@@ -364,9 +475,8 @@ public class ChessNumber {
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("读取文件时出错：" + e.getMessage());
+            System.out.println("文件错误，错误代码为103");
             label.setText("读取文件时出错");
-            steps=-1;
         }
 
         Button YesButn=new Button("确认");
@@ -393,9 +503,9 @@ public class ChessNumber {
         AlertStage.show();
         return steps;
     }
-    public boolean checkGameOver(int pattern, String mode, int choice)
+    public int checkGameOver(int pattern, String mode, int choice,int time)
     {
-        if(mode=="classic"){
+        if(mode.equals("classic")){
             int maxNum=0;
             for(int i=0;i<X_COUNT;i++)
             {
@@ -404,21 +514,89 @@ public class ChessNumber {
                     if(numbers[i][j]>maxNum)maxNum=numbers[i][j];
                 }
             }
-            if(maxNum==choice)return true;
-        }
-        else if(mode=="challenge"){
-            //增加时间管理
-
+            if(maxNum==choice)return 2;
         }
         for(int i=0;i<X_COUNT;i++)
         {
             for(int j=0;j<X_COUNT;j++)
             {
-                if(numbers[i][j]==0)return false;
-                if(i>0&&numbers[i][j]==numbers[i-1][j])return false;
-                if(j>0&&numbers[i][j]==numbers[i][j-1])return false;
+                if(numbers[i][j]==0)return 0;
+                if(i>0&&numbers[i][j]==numbers[i-1][j])return 0;
+                if(j>0&&numbers[i][j]==numbers[i][j-1])return 0;
+            }
+        }
+        return 1;
+    }
+    public void setUserName(String s) {userName=s;}
+    public int getX_COUNT() {
+        return X_COUNT;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getMode() {
+        return Mode;
+    }
+
+    public int getChoice() {
+        return choice;
+    }
+
+    public int[][] getNumbers() {
+        return numbers;
+    }
+    public boolean checkArray(int[][] array,int len)
+    {
+        int x=array.length;
+        if(x!=len)return false;
+        for(int i=0;i<x;i++)
+        {
+            if(x!=array[i].length)return false;
+            for(int j=0;j<x;j++)
+            {
+                if(array[i][j]<0||array[i][j]%2>0)return false;
             }
         }
         return true;
+    }
+    public long getKeyword(int steps,int [][]num,int time)
+    {
+        long Key=0,p=1000000093,t=100043;
+        Key=((steps*t+scores)%p*t+time)%p;
+        Key=((Key*t+X_COUNT)%p*t+choice)%p;
+        for(int i=0;i<X_COUNT;i++)
+        {
+            for(int j=0;j<Y_COUNT;j++){Key=(Key*t+num[i][j])%p;}
+        }
+        return Key;
+    }
+    public boolean checkKeyword(int step,int score,int time,int Count,int[][]num,int choice,long newKey) {
+        long Key = 0, p = 1000000093, t = 100043;
+        Key = ((step * t + score) % p * t + time) % p;
+        Key = ((Key * t + Count) % p * t + choice) % p;
+        for (int i = 0; i < Count; i++) {
+            for (int j = 0; j < Count; j++) {
+                Key = (Key * t + num[i][j]) % p;
+            }
+        }
+        System.out.println("Key:"+ Key);
+        return Key == newKey;
+    }
+    public void putKeyword(int step,int score,int time,int Count,int[][]num,int choice) {
+        long Key = 0, p = 1000000093, t = 100043;
+        Key = ((step * t + score) % p * t + time) % p;
+        Key = ((Key * t + Count) % p * t + choice) % p;
+        for (int i = 0; i < Count; i++) {
+            for (int j = 0; j < Count; j++) {
+                Key = (Key * t + num[i][j]) % p;
+            }
+        }
+        System.out.println("true Key:"+Key);
+    }
+    public void doReserve()
+    {
+
     }
 }

@@ -7,10 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 
 import javax.swing.text.Element;
@@ -19,44 +16,54 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import static com.sun.javafx.css.StyleClassSet.getStyleClass;
+
 public class MainScene {
     private Label label= new Label("欢迎来到2048妙妙屋");
     private Button btn_mode1= new Button("经典模式");
-    private Button btn_mode2= new Button("自定义模式");
-    private Button btn_mode3= new Button("挑战模式");
+    private Button btn_mode2= new Button("挑战模式");
+    private Button btn_mode3= new Button("无尽模式");
 
     private Button btn_help= new Button("帮助");
     private Button btn_setting=new Button("设置");
     private Button btn_back = new Button("返回标题界面");
     private Button btn_back2 = new Button("返回登录界面");
-    VBox root = new VBox(10); // 使用VBox并设置间距
-    private Scene scene = new Scene(root, 900, 550); // 增大场景尺寸以适应所有标签
+    private Button AIbtn=new Button("AI");
+    VBox root = new VBox(20); // 使用VBox并设置间距
+    private Scene scene;
     private double height;
     private double width;
+    private Image image = new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\3.png");
 
     public MainScene() {
         label.setLayoutX(70);
         label.setLayoutY(70);
-        Font font=new Font("Arial", 24);
+        Font font=new Font("Arial", 30);
         label.setFont(font);
-        btn_mode1.setLayoutX(140);
-        btn_mode1.setLayoutY(140);
-        btn_mode2.setLayoutX(210);
-        btn_mode2.setLayoutY(210);
-        btn_mode3.setLayoutX(0);
+        btn_mode1.setLayoutX(140);btn_mode1.setPrefSize(120,50);
+        btn_mode1.setLayoutY(170);
+        btn_mode2.setLayoutX(210);btn_mode2.setPrefSize(120,50);
+        btn_mode2.setLayoutY(240);
+        btn_mode3.setLayoutX(0);btn_mode3.setPrefSize(120, 50);
         btn_mode3.setLayoutY(0);
-        btn_help.setLayoutX(280);
-        btn_help.setLayoutY(280);
-        btn_setting.setLayoutX(350);
-        btn_setting.setLayoutY(350);
-        btn_back.setLayoutX(420);
-        btn_back.setLayoutY(420);
+        btn_help.setLayoutX(280);btn_help.setPrefSize(120, 30);
+        btn_help.setLayoutY(3100);
+        btn_setting.setLayoutX(350);btn_setting.setPrefSize(120, 30);
+        btn_setting.setLayoutY(380);
+        btn_back.setLayoutX(420);btn_back.setPrefSize(120, 30);
+        btn_back.setLayoutY(450);
         btn_back.setLayoutX(500);
-        btn_back2.setLayoutY(500);
+        btn_back2.setLayoutY(530);btn_back2.setPrefSize(120, 30);
         root.setAlignment(Pos.CENTER); // VBox中的内容将垂直居中
-        root.setPadding(new Insets(10)); // 设置内边距
-        // 将Label添加到VBox中
-        root.getChildren().addAll(label, btn_mode1, btn_mode2, btn_mode3,btn_help,btn_setting,btn_back,btn_back2);
+        root.setPadding(new Insets(30)); // 设置内边距
+
+        btn_back2.setStyle("");
+
+        Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
+        root.setBackground(background);
+
+        root.getChildren().addAll(label, btn_mode1, btn_mode2, btn_mode3,btn_help,btn_setting,btn_back,btn_back2,AIbtn);
+        scene = new Scene(root, 900, 550); // 增大场景尺寸以适应所有标签
 
     }
 
@@ -64,6 +71,7 @@ public class MainScene {
     public Label getLabel() {
         return label;
     }
+    public Button getAIbtn(){return AIbtn;}
 
     public void setLabel(Label label) {
         this.label = label;

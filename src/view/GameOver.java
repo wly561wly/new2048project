@@ -8,11 +8,11 @@ import javafx.scene.layout.Pane;
 public class GameOver {
     private Scene scene;
 
-    private Button restartButn = new Button("Restart");
-    private Button exitButn = new Button("Exit");
+    private Button restartButn = new Button("重新开始");
+    private Button exitButn = new Button("退出");
     private Label settleLabel;
     private Label levelLabel= new Label();
-    public GameOver(int scores)
+    public GameOver(int p,int scores)
     {
         settleLabel= new Label("本局游戏得分为："+ Integer.toString(scores));
         settleLabel.setLayoutX(101);
@@ -57,6 +57,18 @@ public class GameOver {
 
         Pane overPane=new Pane();
         overPane.getChildren().addAll(settleLabel,levelLabel,restartButn,exitButn);
+
+        if(p==1){
+            Label winLabel=new Label("You Win!!!");
+            winLabel.setLayoutX(120);
+            winLabel.setLayoutY(40);
+            settleLabel.setLayoutX(101);
+            settleLabel.setLayoutY(70);
+            levelLabel.setLayoutX(110);
+            levelLabel.setLayoutY(120);
+            overPane.getChildren().add(winLabel);
+        }
+
 
         scene=new Scene(overPane,300,300);
     }

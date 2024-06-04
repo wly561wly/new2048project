@@ -7,7 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,27 +23,20 @@ public class ForgetScene {
     TextField account = new TextField();
     PasswordField password = new PasswordField();
     VBox forgetRoot = new VBox(30); // 竖直间距为30
-    Scene scene = new Scene(mainVBox,900,550);
+    Scene scene;
     boolean confirm = false;
+    private Image image = new Image("file:C:\\Users\\Taxes\\IdeaProjects\\cs109\\resources\\image\\4.jpg");
     public ForgetScene() {
+        mainVBox.setMaxWidth(400);
+        forgetRoot.setMaxWidth(400);
         mainVBox.setAlignment(Pos.TOP_CENTER); // 内容顶部居中对齐
         mainVBox.setPadding(new Insets(20, 20, 20, 20)); // 设置内边距
         forgetRoot.setAlignment(Pos.CENTER_LEFT); // 内容左对齐
         forgetRoot.getChildren().addAll(accountLabel, account, passwordLabel, password, confirmBtn, backBtn);
         mainVBox.getChildren().add(forgetRoot);
-
-        confirmBtn.setOnAction(event -> {
-            // saveAccountData(accountTextField.getText(), passwordTextField.getText());
-            //todo:设置成功的话需要提示用户
-            confirmBtn.setOnAction(event1 -> {
-                try (FileWriter writer = new FileWriter("UserInfo.txt")) {
-                    writer.write(String.valueOf(account));
-                } catch (IOException event2) {
-                    event2.printStackTrace();
-                }
-            });
-            confirm = true;
-        });
+        Background background = new Background(new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.ROUND, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
+        mainVBox.setBackground(background);
+        scene = new Scene(mainVBox,900,550);
     }
 
     public Scene getScene(){
